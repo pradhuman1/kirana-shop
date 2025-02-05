@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 
 import connectDB from "./dbConnect";
 import authRoutes from "./authRoutes";
+import productRoutes from "./productRoutes";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.get("/healthcheck", (req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/product", productRoutes);
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
