@@ -1,5 +1,10 @@
 # kirana-shop
 
+# Steps to run the repo
+
+npm run dev
+`http://localhost:8000/`
+
 # Tutorial for setup
 
 https://blog.logrocket.com/how-to-set-up-node-typescript-express/
