@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema({
   productTitle: { type: String, required: true },
-  imgUrl: { type: String, required: true, unique: true },
+  imgCDNUrl: { type: String, required: true },
   price: { type: String, require: true },
   commission: { type: String, require: true },
 });

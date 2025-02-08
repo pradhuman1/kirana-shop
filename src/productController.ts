@@ -32,6 +32,9 @@ export const addProduct = async (
     product_commision,
   }: ProductBody = req.body;
 
+  console.log("req.body");
+  console.log(req.body);
+
   try {
     const productExists = await Product.findOne({ email: product_title });
 
@@ -41,7 +44,7 @@ export const addProduct = async (
 
     const product = await Product.create({
       productTitle: product_title,
-      imgUrl: product_imgURL,
+      imgCDNUrl: product_imgURL,
       price: product_price,
       commission: product_commision,
     });
@@ -50,19 +53,37 @@ export const addProduct = async (
       res.status(201).json({
         _id: product._id,
         productTitle: product.productTitle,
-        imgUrl: product.imgUrl,
+        imgLink: product.imgCDNUrl,
         price: product.price,
         commission: product.commission,
       });
     } else {
-      res.status(400).json({ message: "Invalid user data" });
+      res.status(400).json({ message: "Invalid Product data" });
     }
 
     next();
   } catch (error) {
     next();
     res.status(500).json({
-      message: `Something went wrong ${error}`,
+      message: `Something went wrong  ${error}`,
+    });
+  }
+};
+
+export const getAllProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const productList = await Product.find({});
+    console.log("product list data");
+    console.log(productList);
+    res.status(200).json({ productList: productList });
+  } catch (error) {
+    next();
+    res.status(500).json({
+      message: `Something went wrong  ${error}`,
     });
   }
 };

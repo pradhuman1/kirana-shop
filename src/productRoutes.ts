@@ -1,9 +1,10 @@
 import express from "express";
-import { addProduct } from "./productController";
+import { addProduct, getAllProducts } from "./productController";
 
 const router = express.Router();
 
-// Signup route
 router.post("/add-product", addProduct);
+
+router.get("/get-all-product", getAllProducts);
 
 export default router;

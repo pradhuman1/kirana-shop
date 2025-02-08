@@ -11,6 +11,7 @@ if (!MONGODB_URL) {
 const connectDB = async (): Promise<void> => {
   try {
     await mongoose.connect(MONGODB_URL);
+
     console.log("MongoDB connected");
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";

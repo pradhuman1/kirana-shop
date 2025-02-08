@@ -1,10 +1,12 @@
 import express from "express";
-import { testController, signup } from "./authController";
+import { testController, signup, getAllBusiness } from "./authController";
 
 const router = express.Router();
 
 // Signup route
 router.post("/signup", signup);
+
+router.get("/get-all-businesses", getAllBusiness);
 
 // Login route
 //router.post("/login", login);

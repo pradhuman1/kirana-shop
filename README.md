@@ -49,3 +49,7 @@ Need to think again deeply all the case @Atishay Baid todo
 # Inventory Db
 
 {shopId:,id:"",productList:[{id,quantity,markUnAvaliable:false}],}
+
+# Deleting a perticular index
+
+`await Product.collection.dropIndex("imgUrl_1");`

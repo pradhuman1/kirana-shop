@@ -63,6 +63,24 @@ export const signup = async (
   }
 };
 
+export const getAllBusiness = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const businessList = await Business.find({});
+    console.log("product list data");
+    console.log(businessList);
+    res.status(200).json({ businessList: businessList });
+  } catch (error) {
+    next();
+    res.status(500).json({
+      message: `Something went wrong  ${error}`,
+    });
+  }
+};
+
 /*
 typescript flow
 - Why is type script not trowing error for not knowing if req,will containe body or not?
