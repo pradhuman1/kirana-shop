@@ -89,7 +89,10 @@ export const getInventory = async (
     console.log(`gettig inventory for ${businessId}`);
     const inventoryData = await Inventory.findOne({
       businessId: businessId,
-    }).populate("businessId");
+    })
+      .populate("businessId")
+      .populate("products.productId")
+      .exec();
     console.log("inventoryData");
     console.log(inventoryData);
 
