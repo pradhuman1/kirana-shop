@@ -87,3 +87,80 @@ export const getAllProducts = async (
     });
   }
 };
+
+interface ProductUpdateType {
+  productId: string | Number;
+  dataToModify: {
+    productTitle?: string;
+    imgCDNUrl?: string;
+    price?: string;
+    commission?: string;
+  };
+}
+
+export const updateProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const { productId, dataToModify }: ProductUpdateType = req.body;
+
+    // console.log("data to modify");
+    // console.log(dataToModify);
+
+    const productDetailInDb = await Product.findById({ _id: productId });
+
+    console.log("productdetails in db");
+    console.log(productDetailInDb);
+    console.log("dataToModify");
+    console.log(dataToModify);
+    if (!productDetailInDb)
+      return res.status(404).json({ message: "Product dosent exists" });
+
+    const productDataToModify = Object.assign(productDetailInDb, dataToModify);
+
+    // console.log("product details in db");
+    // console.log(productDetailInDb);
+
+    console.log("merged data");
+    console.log(productDataToModify);
+
+    const modifiedProductData = await Product.findOneAndUpdate(
+      {
+        _id: productId,
+      },
+      productDataToModify
+    );
+
+    res.status(200).json({
+      modifiedProductData: productDataToModify,
+    });
+  } catch (error) {
+    next();
+    res.status(500).json({
+      message: `Something went wrong  ${error}`,
+    });
+  }
+};
+
+export const deleteProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { productId } = req.body;
+
+    const result = await Product.findByIdAndDelete(productId);
+
+    res.status(200).json({
+      message: `Product with ${productId} deleted successfully`,
+    });
+  } catch (error) {
+    next();
+    res.status(500).json({
+      message: `Something went wrong  ${error}`,
+    });
+  }
+};
