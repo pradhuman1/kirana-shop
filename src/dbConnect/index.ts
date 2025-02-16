@@ -8,11 +8,17 @@ if (!MONGODB_URL) {
   throw new Error("MONGODB_URL is not defined in environment variables.");
 }
 
-const connectDB = async (): Promise<void> => {
-  try {
-    await mongoose.connect(MONGODB_URL);
+let db: any;
 
-    console.log("MongoDB connected");
+const connectDB = async () => {
+  try {
+    if (!db) {
+      await mongoose.connect(MONGODB_URL);
+      db = mongoose.connection.db;
+
+      console.log("MongoDB connected");
+    }
+    return db;
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("MongoDB connection failed:", errMessage);

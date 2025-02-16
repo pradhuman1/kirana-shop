@@ -25,7 +25,7 @@ export const addInventory = async (
   try {
     const { businessId, productList = [] }: InventoryBody = req.body;
     const invalidProductIds: productId[] = [];
-    const validProductData: ProductBody[] = [];
+    const validProductData: String | Number[] = [];
 
     console.log("data received at inventory body");
     console.log(productList);
@@ -37,7 +37,7 @@ export const addInventory = async (
       return;
     }
 
-    productList.forEach((productItem: ProductBody) => {
+    productList.forEach(async (productItem: ProductBody) => {
       const {
         productId,
         quantity,
@@ -46,25 +46,17 @@ export const addInventory = async (
       if (!CheckIfProductExists(productId)) {
         invalidProductIds.push(productId);
       } else {
-        validProductData.push({
-          productId: productId,
+        const inventoryId = await Inventory.create({
+          businessId: businessId,
+          productInfo: productId,
           quantity: quantity,
           markUnavaliable: markUnavaliable,
         });
       }
     });
 
-    console.log("valid product data");
-    console.log(validProductData);
-    const inventory = await Inventory.findOneAndUpdate(
-      { businessId: businessId },
-      { products: validProductData },
-      { upsert: true, new: true }
-    );
-
     res.status(200).json({
       invalidProductIds: invalidProductIds,
-      inventoryId: inventory._id,
     });
   } catch (error) {
     next();
@@ -91,7 +83,7 @@ export const getInventory = async (
       businessId: businessId,
     })
       .populate("businessId")
-      .populate("products.productId")
+      .populate("productInfo")
       .exec();
     console.log("inventoryData");
     console.log(inventoryData);
@@ -104,3 +96,10 @@ export const getInventory = async (
     });
   }
 };
+
+/*
+ productId: productId;
+  quantity?: Number;
+  markUnavaliable?: Boolean;
+
+*/

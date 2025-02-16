@@ -10,6 +10,8 @@ import authRoutes from "./authRoutes";
 import productRoutes from "./productRoutes";
 import inventoryRoutes from "./inventoryRoutes";
 
+import DatabaseRoutes from "./DatabaseRoutes";
+
 dotenv.config();
 
 const app: Express = express();
@@ -30,6 +32,8 @@ app.get("/healthcheck", (req: Request, res: Response) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/inventory", inventoryRoutes);
+
+app.use("/api/db", DatabaseRoutes);
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);

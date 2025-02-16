@@ -3,6 +3,9 @@ const { SchemaTypes } = mongoose;
 
 /*
 {businessId:"",productList:[],lastUpdatedOn:date}
+
+modifiedStructure
+{businessId:"",lastUpdatedOn:date,product:{ref:Product},quantity:123,markUnavaliable:}
 */
 
 const inventorySchema = new mongoose.Schema({
@@ -11,17 +14,13 @@ const inventorySchema = new mongoose.Schema({
     ref: "Business",
     required: true,
   },
-  products: [
-    {
-      productId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
-        required: true,
-      },
-      quantity: { type: Number, required: true },
-      markUnavaliable: { type: Boolean },
-    },
-  ],
+  productInfo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Product",
+    required: true,
+  },
+  quantity: { type: Number, required: true },
+  markUnavaliable: { type: Boolean },
 });
 
 const Inventory = mongoose.model("Inventory", inventorySchema);
