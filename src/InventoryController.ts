@@ -33,8 +33,6 @@ export const addInventory = async (
       res
         .send(500)
         .json({ message: `Business with ${businessId} dosent exists ` });
-
-      return;
     }
 
     productList.forEach(async (productItem: ProductBody) => {
@@ -94,6 +92,37 @@ export const getInventory = async (
     res.status(500).json({
       message: `Something went wrong  ${error}`,
     });
+  }
+};
+
+export const deleteInventory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { businessId } = req.body;
+    console.log(`Deleting inventory for business ${businessId}`);
+
+    const existingInventory = await Inventory.findOne({
+      businessId: businessId,
+    });
+
+    if (!existingInventory) {
+      res.status(404).json({
+        message: "Inventory not found for this business",
+      });
+    }
+
+    await Inventory.findOneAndDelete({
+      businessId: businessId,
+    });
+
+    res.status(200).json({
+      message: "Inventory deleted successfully",
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
