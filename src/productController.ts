@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Product from "./Product.Model";
-
+import { scrapProduct } from "./scrappers/index"
 interface ProductBody {
   product_title: string;
   product_imgURL: string;
@@ -157,6 +157,37 @@ export const deleteProduct = async (
     res.status(200).json({
       message: `Product with ${productId} deleted successfully`,
     });
+  } catch (error) {
+    next();
+    res.status(500).json({
+      message: `Something went wrong  ${error}`,
+    });
+  }
+};
+
+export const generateProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  const {
+    ean,
+  } = req.body;
+
+  console.log("req.body");
+  console.log(req.body);
+
+  try {
+
+    const product = await scrapProduct(ean)
+
+    if (product) {
+      res.status(201).json(product);
+    } else {
+      res.status(400).json({ message: "Product not found" });
+    }
+
+    next();
   } catch (error) {
     next();
     res.status(500).json({
