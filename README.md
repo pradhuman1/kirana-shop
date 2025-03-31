@@ -53,3 +53,7 @@ Need to think again deeply all the case @Atishay Baid todo
 # Deleting a perticular index
 
 `await Product.collection.dropIndex("imgUrl_1");`
+
+# Schema variable naming convention
+
+`camelCase` for models

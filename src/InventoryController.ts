@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { CheckIfBusinessExists, CheckIfProductExists } from "./DataUtils";
 
-import Business from "./Business.Model";
 import Inventory from "./Inventory.Model";
 
 type productId = Number | string;
@@ -123,6 +122,64 @@ export const deleteInventory = async (
     });
   } catch (error) {
     next(error);
+  }
+};
+
+interface UpdateInventoryBody {
+  businessId: Number | string;
+  productId: Number | string;
+  updateData: {
+    quantity?: Number;
+    markUnavaliable?: Boolean;
+  };
+}
+
+interface UpdateInventoryData {
+  quantity?: Number;
+  markUnavaliable?: Boolean;
+}
+
+export const updateInventory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { businessId, productId, updateData }: UpdateInventoryBody = req.body;
+
+    const existingInventory = await Inventory.findOne({
+      businessId: businessId,
+    });
+
+    if (!existingInventory) {
+      res.status(404).json({
+        message: "Inventory not found for this business",
+      });
+    }
+
+    const dataToUpdate: UpdateInventoryData = {};
+    if (updateData.quantity !== undefined) {
+      dataToUpdate["quantity"] = updateData.quantity;
+    }
+    if (updateData.markUnavaliable !== undefined) {
+      dataToUpdate["markUnavaliable"] = updateData.markUnavaliable;
+    }
+
+    const updatedInventory = await Inventory.findOneAndUpdate(
+      { businessId: businessId, productId: productId },
+      dataToUpdate,
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Inventory updated successfully",
+      updatedInventory: updatedInventory,
+    });
+  } catch (error) {
+    next(error);
+    res.status(500).json({
+      message: `Something went wrong  ${error}`,
+    });
   }
 };
 

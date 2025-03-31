@@ -3,10 +3,17 @@ import mongoose from "mongoose";
 
 const businessSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  type: { type: String, require: true },
-  location: { type: String, require: true },
+  phone: { type: String, required: true, unique: true },
+  email: { type: String, unique: true, sparse: true },
+  type: { type: String },
+  location: { type: String },
+  address: {
+    street: { type: String },
+    city: { type: String },
+    state: { type: String },
+    zipCode: { type: String },
+    country: { type: String, default: "India" }, // you can set defaults too },
+  },
 });
 
 // Compare entered password with hashed password
