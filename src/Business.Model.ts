@@ -6,13 +6,17 @@ const businessSchema = new mongoose.Schema({
   phone: { type: String, required: true, unique: true },
   email: { type: String, unique: true, sparse: true },
   type: { type: String },
-  location: { type: String },
+  locationCoordinates: {
+    latitude: { type: Number },
+    longitude: { type: Number },
+  },
   address: {
     street: { type: String },
     city: { type: String },
     state: { type: String },
     zipCode: { type: String },
     country: { type: String, default: "India" }, // you can set defaults too },
+    addressLine1: { type: String },
   },
 });
 

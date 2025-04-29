@@ -16,66 +16,74 @@ interface InventoryBody {
   productList: ProductBody[];
 }
 
+interface AuthRequest extends Request {
+  user?: {
+    businessId: string | number;
+  };
+}
+
 export const addInventory = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction
-) => {
+): Promise<any> => {
   try {
-    const { businessId, productList = [] }: InventoryBody = req.body;
+    const { productList = [] }: InventoryBody = req.body;
+    const businessId = req.user?.businessId;
+
+    if (!businessId) {
+      return res
+        .status(400)
+        .json({ message: "Business ID not found in token" });
+    }
+
     const invalidProductIds: productId[] = [];
     const validProductData: String | Number[] = [];
 
     console.log("data received at inventory body");
     console.log(productList);
     if (!CheckIfBusinessExists(businessId)) {
-      res
-        .send(500)
-        .json({ message: `Business with ${businessId} dosent exists ` });
+      return res
+        .status(500)
+        .json({ message: `Business with ${businessId} doesn't exist` });
     }
 
-    productList.forEach(async (productItem: ProductBody) => {
-      const {
-        productId,
-        quantity,
-        markUnavaliable = false,
-      }: ProductBody = productItem;
-      if (!CheckIfProductExists(productId)) {
-        invalidProductIds.push(productId);
-      } else {
-        const inventoryId = await Inventory.create({
-          businessId: businessId,
-          productInfo: productId,
-          quantity: quantity,
-          markUnavaliable: markUnavaliable,
-        });
-      }
-    });
+    await Promise.all(
+      productList.map(async (productItem: ProductBody) => {
+        const {
+          productId,
+          quantity,
+          markUnavaliable = false,
+        }: ProductBody = productItem;
+        if (!CheckIfProductExists(productId)) {
+          invalidProductIds.push(productId);
+        } else {
+          const inventoryId = await Inventory.create({
+            businessId: businessId,
+            productInfo: productId,
+            quantity: quantity,
+            markUnavaliable: markUnavaliable,
+          });
+        }
+      })
+    );
 
-    res.status(200).json({
+    return res.status(200).json({
       invalidProductIds: invalidProductIds,
     });
   } catch (error) {
-    next();
-    res.status(500).json({
-      message: `Something went wrong  ${error}`,
-    });
+    next(error);
   }
-
-  /*
-      Get the infromation about the shop
-     check shop in the shopdatabase,if shop dosenot exists reject the request saying shop does not exists
-    */
 };
 
 export const getInventory = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<any> => {
   try {
     const { businessId } = req.body;
-    console.log(`gettig inventory for ${businessId}`);
+    console.log(`getting inventory for ${businessId}`);
     const inventoryData = await Inventory.findOne({
       businessId: businessId,
     })
@@ -85,12 +93,9 @@ export const getInventory = async (
     console.log("inventoryData");
     console.log(inventoryData);
 
-    res.status(200).send({ inventoryData: inventoryData });
+    return res.status(200).json({ inventoryData: inventoryData });
   } catch (error) {
-    next();
-    res.status(500).json({
-      message: `Something went wrong  ${error}`,
-    });
+    next(error);
   }
 };
 

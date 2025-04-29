@@ -1,4 +1,6 @@
 import express from "express";
+import { Request, Response, NextFunction } from "express";
+
 import {
   testController,
   getAllBusiness,
@@ -14,6 +16,15 @@ const router = express.Router();
 router.post("/signup-new", signupNew);
 router.get("/get-all-businesses", getAllBusiness);
 router.post("/verify-otp-and-create-business", verifyOtpAndCreateBusiness);
+//router.post("/update-business", updateBusiness);
+// router.post(
+//   "/update-business",
+//   (req: Request, res: Response, next: NextFunction) => {
+//     console.log("req.body", req.body);
+//     res.status(200).json({ message: "Business updated" });
+//   }
+// );
+
 router.post("/update-business", updateBusiness);
 
 // Login route

@@ -3,6 +3,12 @@ import Business from "./Business.Model";
 import responseCode, { responseMessage } from "./utils/resonseCode";
 import { generateToken, verifyToken } from "./Jwt";
 
+interface AuthRequest extends Request {
+  tokenDetails?: {
+    businessId: string | number;
+  };
+}
+
 export const testController = (req: Request, res: Response) => {
   res.send("test controller called");
 };
@@ -191,7 +197,10 @@ interface UpdateBusinessData {
   name?: string;
   email?: string;
   type?: string;
-  location?: string;
+  locationCoordinates?: {
+    latitude: number;
+    longitude: number;
+  };
   address?: {
     street?: string;
     city?: string;
@@ -201,28 +210,57 @@ interface UpdateBusinessData {
 }
 
 interface UpdateBusinessBody {
-  businessId: string;
   businessData: UpdateBusinessData;
+  user: any;
 }
 
 const validateBusinessData = (businessData: UpdateBusinessData) => {
   const businessKeys = Object.keys(businessData);
-  const allowedKeys = ["name", "email", "type", "location", "address"];
+  /* name: { type: String, required: true },
+  phone: { type: String, required: true, unique: true },
+  email: { type: String, unique: true, sparse: true },
+  type: { type: String },
+  location: { type: String },
+  address: {
+    street: { type: String },
+    city: { type: String },
+    state: { type: String },
+    zipCode: { type: String },
+    country: { type: String, default: "India" },
+    addressLine1: { type: String },
+  },*/
+
+  const allowedKeys = [
+    "name",
+    "email",
+    "type",
+    "locationCoordinates",
+    "address",
+    "phone",
+    "addressLine1",
+  ];
   const isValid = businessKeys.every((key) => allowedKeys.includes(key));
   return isValid;
 };
 
 export const updateBusiness = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<any> => {
-  const { businessId, businessData }: UpdateBusinessBody = req.body;
+  const { businessData }: UpdateBusinessBody = req.body;
+  const tokenDetails = req.tokenDetails;
+  const businessId = tokenDetails?.businessId;
 
   try {
     const isValid = validateBusinessData(businessData);
     if (!isValid) {
       return res.status(400).json({ message: "Invalid business data" });
+    }
+    if (!businessId) {
+      return res
+        .status(400)
+        .json({ message: "Business ID not found in token" });
     }
     const business = await Business.findByIdAndUpdate(businessId, businessData);
     return res.status(200).json({
@@ -230,7 +268,11 @@ export const updateBusiness = async (
       code: responseCode.SUCCESS,
     });
   } catch (error) {
-    next();
+    console.log("error", error);
+    // return res.status(500).json({
+    //   message: "Something went wrong",
+    //   code: responseCode.INTERNAL_SERVER_ERROR,
+    // });
   }
 };
 
