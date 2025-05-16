@@ -3,7 +3,9 @@ import Product from "./Product.Model";
 import { scrapProduct } from "./scrappers/index"
 import fs from 'fs';
 import csv from 'csv-parser';
-
+import {
+  getAllInventory
+} from "./InventoryController"
 
 interface ProductBody {
   productTitle: string;
@@ -209,8 +211,8 @@ interface SearchProductResult {
   weight: string,
   price: string,
   brand: string,
-  variants?: [SearchProductResult],
-  imagesUrl: [string],
+  variants?: SearchProductResult[],
+  imagesUrl: string[],
 }
 
 function tokenize(input: string): string[] {
@@ -221,53 +223,163 @@ function tokenize(input: string): string[] {
 }
 
 export const searchProducts = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
+  req: Request,
+  res: Response,
+  next: NextFunction
 ) => {
-  try{
-    const {searchTerm} = req.body;
+  try {
+    const { searchTerm, page = 1, pageSize = 100 } = req.body;
+    const zoneId = "123"; // to be changed
+    const userType = "KIRANA"; // to be changed
+
     if (!searchTerm) throw new Error("No search term provided");
+
     const tokens = tokenize(searchTerm);
+    const fetchLimit = 1000;
+    const skip = (page - 1) * fetchLimit;
 
-    let globalSearchResults = await Product.find({
+    // Stage 1: Search using searchTokens
+    const tokenResults = await Product.find({
       searchTokens: { $in: tokens }
-    }).limit(100);
+    }).skip(skip).limit(fetchLimit);
 
-    if (globalSearchResults.length === 0) {
+    let regexResults: any[] = [];
+
+    // Stage 2: If results are not enough, fetch from regex
+    if (tokenResults.length < fetchLimit) {
       const regexes = tokens.map(token => new RegExp(token, "i"));
-
-      globalSearchResults = await Product.find({
+      regexResults = await Product.find({
         $or: [
           { productTitle: { $in: regexes } },
           { brand: { $in: regexes } },
           { weight: { $in: regexes } }
         ]
-      }).limit(100);
+      }).limit(fetchLimit);
     }
 
-    const globalRankedResults = globalSearchResults
+    // Stage 3: Deduplicate
+    const deduplicatedMap = new Map<string, any>();
+    for (const doc of [...tokenResults, ...regexResults]) {
+      deduplicatedMap.set(doc._id.toString(), doc);
+    }
+    const deduplicatedResults = Array.from(deduplicatedMap.values());
+
+    // Stage 4: Rank
+    const globalRankedResults = deduplicatedResults
       .map(doc => {
         const combinedText = `${doc.productTitle} ${doc.brand} ${doc.weight}`.toLowerCase();
         const matchCount = tokens.filter(token => combinedText.includes(token)).length;
         return { doc, score: matchCount };
       })
       .sort((a, b) => b.score - a.score)
-      .slice(0, 20)
       .map(result => result.doc);
 
-    
-    
-    
-    res.status(200).json(globalRankedResults);
+    // Stage 5: Filter by userType and inventory
+    const zoneInventoryData = await getAllInventory(zoneId);
+    const filteredResults = filterResults(userType, globalRankedResults, zoneInventoryData);
 
-  }catch(error){
-    next();
+    // Stage 6: Final pagination on filtered data
+    const paginatedResults = filteredResults.slice((page - 1) * pageSize, page * pageSize);
+
+    // Stage 7: Shape response
+    const finalResults: SearchProductResult[] = [];
+
+    // Stage 9: Fetch variants data
+    for (const filteredFinalResult of paginatedResults) {
+      // Resolve variants
+      let variantResults: SearchProductResult[] | undefined;
+
+      if (filteredFinalResult.variantIds?.length) {
+        const rawVariants: any[] = [];
+
+        const missingVariantIds: string[] = [];
+
+        // check if variant data was already fetched
+        for (const id of filteredFinalResult.variantIds) {
+          const strId = id.toString();
+          const variantDoc = deduplicatedMap.get(strId);
+          if (variantDoc) {
+            rawVariants.push(variantDoc);
+          } else {
+            missingVariantIds.push(strId);
+          }
+        }
+
+        // Fetch only missing ones from DB
+        if (missingVariantIds.length > 0) {
+          const fetchedVariants = await Product.find({
+            _id: { $in: missingVariantIds },
+          });
+          rawVariants.push(...fetchedVariants);
+        }
+
+        // Filter variants data
+        const filteredVariants = filterResults(
+          userType,
+          rawVariants,
+          zoneInventoryData
+        );
+        
+        // Shape variants data
+        variantResults = filteredVariants.map(v => ({
+          productID: v._id,
+          productTitle: v.productTitle,
+          weight: v.weight,
+          price: v.price,
+          brand: v.brand,
+          variants: [], // Nested variants not needed (1-level deep only)
+          imagesUrl: v.imagesUrl,
+        }));
+      }
+
+      // Shape parent product
+      finalResults.push({
+        productID: filteredFinalResult._id,
+        productTitle: filteredFinalResult.productTitle,
+        weight: filteredFinalResult.weight,
+        price: filteredFinalResult.price,
+        brand: filteredFinalResult.brand,
+        variants: variantResults,
+        imagesUrl: filteredFinalResult.imagesUrl,
+      });
+    }
+    res.status(200).json({
+      products: finalResults
+    });
+
+  } catch (error) {
+    console.error(error);
     res.status(500).json({
-      message: `Something went wrong  ${error}`,
+      message: `Something went wrong: ${error}`,
     });
   }
-}
+};
+
+const filterResults = (
+  userType: string,
+  productData: any[],
+  inventoryData: any[]
+): any[] => {
+  const inventoryMap = new Map<string, any>();
+
+  for (const inv of inventoryData) {
+    inventoryMap.set(inv.productId.toString(), inv);
+  }
+
+  if (userType === "CONSUMER") {
+    return productData.filter((product) => {
+      const inv = inventoryMap.get(product._id.toString());
+      return inv && !inv.markUnavailable;
+    });
+  }
+
+  if (userType === "KIRANA") {
+    return productData.filter(
+      (product) => !inventoryMap.has(product._id.toString())
+    );
+  }
+  return [];
+};
 
 
 export const getAllProducts = async (
