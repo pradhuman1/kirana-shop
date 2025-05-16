@@ -236,7 +236,7 @@ export const searchProducts = async (
 
     const tokens = tokenize(searchTerm);
     const fetchLimit = 1000;
-    const skip = (page - 1) * fetchLimit;
+    const skip = (page - 1) * pageSize;
 
     // Stage 1: Search using searchTokens
     const tokenResults = await Product.find({
@@ -254,7 +254,7 @@ export const searchProducts = async (
           { brand: { $in: regexes } },
           { weight: { $in: regexes } }
         ]
-      }).limit(fetchLimit);
+      }).skip(skip).limit(fetchLimit);
     }
 
     // Stage 3: Deduplicate
@@ -279,7 +279,7 @@ export const searchProducts = async (
     const filteredResults = filterResults(userType, globalRankedResults, zoneInventoryData);
 
     // Stage 6: Final pagination on filtered data
-    const paginatedResults = filteredResults.slice((page - 1) * pageSize, page * pageSize);
+    const paginatedResults = filteredResults.slice(0, pageSize);
 
     // Stage 7: Shape response
     const finalResults: SearchProductResult[] = [];
