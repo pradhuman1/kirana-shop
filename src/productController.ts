@@ -222,11 +222,45 @@ function tokenize(input: string): string[] {
     .filter(Boolean);
 }
 
+export const searchProductByEan = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any>  => {
+  try {
+    const { ean } = req.body;
+    if (!ean) throw new Error("No ean provided");
+
+    const productData = await Product.findOne({ ean });
+
+    if (productData) {
+      const finalResult: SearchProductResult = {
+        productID: productData._id.toString(),
+        productTitle: productData.productTitle?? "",
+        weight: productData.weight?? "",
+        price: productData.price?? "",
+        brand: productData.brand?? "",
+        imagesUrl: productData.imagesUrl || [],
+      };
+
+      return res.status(200).json(finalResult);
+    } else {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: `Something went wrong: ${error}`,
+    });
+  }
+}
+
 export const searchProducts = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<any> => {
   try {
     const { searchTerm, page = 1, pageSize = 100 } = req.body;
     const zoneId = "123"; // to be changed

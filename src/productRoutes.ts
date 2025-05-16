@@ -10,11 +10,13 @@ import {
   deleteProduct,
   generateProduct,
   searchProducts,
+  searchProductByEan
 } from "./productController";
 
 const router = express.Router();
 
 // router.post("/add-product", addProduct);
+router.post('/search-product-ean', searchProductByEan);
 
 router.post('/search-product', searchProducts);
 
