@@ -8,7 +8,7 @@ type productId = Number | string;
 interface ProductBody {
   productId: productId;
   quantity?: Number;
-  markUnavaliable?: Boolean;
+  markUnavailable?: Boolean;
 }
 
 interface InventoryBody {
@@ -20,6 +20,20 @@ interface AuthRequest extends Request {
   user?: {
     businessId: string | number;
   };
+}
+
+export const getAllInventory = async(
+  zoneId: string
+): Promise<any> => {
+  try{
+    if(!zoneId) throw new Error("Empty zone ID")
+    const zoneInventoryData = await Inventory.find({
+      zoneId
+    })
+    return zoneInventoryData;
+  }catch(error){
+    return error;
+  }
 }
 
 export const addInventory = async (
@@ -53,7 +67,7 @@ export const addInventory = async (
         const {
           productId,
           quantity,
-          markUnavaliable = false,
+          markUnavailable = false,
         }: ProductBody = productItem;
         if (!CheckIfProductExists(productId)) {
           invalidProductIds.push(productId);
@@ -62,7 +76,7 @@ export const addInventory = async (
             businessId: businessId,
             productInfo: productId,
             quantity: quantity,
-            markUnavaliable: markUnavaliable,
+            markUnavailable: markUnavailable,
           });
         }
       })
@@ -135,13 +149,13 @@ interface UpdateInventoryBody {
   productId: Number | string;
   updateData: {
     quantity?: Number;
-    markUnavaliable?: Boolean;
+    markUnavailable?: Boolean;
   };
 }
 
 interface UpdateInventoryData {
   quantity?: Number;
-  markUnavaliable?: Boolean;
+  markUnavailable?: Boolean;
 }
 
 export const updateInventory = async (
@@ -166,8 +180,8 @@ export const updateInventory = async (
     if (updateData.quantity !== undefined) {
       dataToUpdate["quantity"] = updateData.quantity;
     }
-    if (updateData.markUnavaliable !== undefined) {
-      dataToUpdate["markUnavaliable"] = updateData.markUnavaliable;
+    if (updateData.markUnavailable !== undefined) {
+      dataToUpdate["markUnavailable"] = updateData.markUnavailable;
     }
 
     const updatedInventory = await Inventory.findOneAndUpdate(
@@ -191,6 +205,6 @@ export const updateInventory = async (
 /*
  productId: productId;
   quantity?: Number;
-  markUnavaliable?: Boolean;
+  markUnavailable?: Boolean;
 
 */

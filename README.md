@@ -48,7 +48,7 @@ Need to think again deeply all the case @Atishay Baid todo
 
 # Inventory Db
 
-{shopId:,id:"",productList:[{id,quantity,markUnAvaliable:false}],}
+{shopId:,id:"",productList:[{id,quantity,markUnavailable:false}],}
 
 # Deleting a perticular index
 

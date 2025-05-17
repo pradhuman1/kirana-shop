@@ -12,6 +12,7 @@ import productRoutes from "./productRoutes";
 import inventoryRoutes from "./inventoryRoutes";
 
 import DatabaseRoutes from "./DatabaseRoutes";
+import CronRoutes from "./cron/cronRoutes";
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/db", DatabaseRoutes);
+app.use("/api/cron", CronRoutes);
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
