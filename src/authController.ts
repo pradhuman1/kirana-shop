@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import Business from "./Business.Model";
 import responseCode, { responseMessage } from "./utils/resonseCode";
 import { generateToken, verifyToken } from "./Jwt";
+import { IBusiness } from "./businessTypes";
 
 interface AuthRequest extends Request {
   tokenDetails?: {
@@ -210,7 +211,7 @@ interface UpdateBusinessData {
 }
 
 interface UpdateBusinessBody {
-  businessData: UpdateBusinessData;
+  businessData: IBusiness;
   user: any;
 }
 
@@ -292,6 +293,26 @@ export const getAllBusiness = async (
       message: `Something went wrong  ${error}`,
     });
   }
+};
+
+export const findBusinessById = async (id: string) => {
+  return await Business.findById(id);
+};
+
+export const getBusinessById = async (
+  req?: Request,
+  res?: Response,
+  next?: NextFunction,
+  internal: boolean = false
+) => {
+  if (!req) throw new Error("Request object is required");
+  const { businessId } = req.params;
+  const business = await findBusinessById(businessId);
+
+  if (internal || !res) {
+    return business;
+  }
+  return res.status(200).json({ business });
 };
 
 /*

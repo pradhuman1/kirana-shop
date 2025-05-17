@@ -2,11 +2,14 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { verifyToken } from "../Jwt";
 import responseCode, { responseMessage } from "../utils/resonseCode";
+import { findBusinessById } from "../authController";
+import { IBusiness } from "../businessTypes";
 interface AuthRequest extends Request {
   tokenDetails?: {
     businessId: string | number;
     // add other user fields you store in token
   };
+  businessDetails?: IBusiness;
 }
 
 export const authenticateToken = async (
@@ -31,7 +34,13 @@ export const authenticateToken = async (
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
     req.tokenDetails = decoded as { businessId: string | number };
+    const business = await findBusinessById(
+      req.tokenDetails.businessId as string
+    );
+    req.businessDetails = business as IBusiness;
+
     console.log("req.tokenDetails", req.tokenDetails);
+    console.log("req.businessDetails", req.businessDetails);
     next();
   } catch (error) {
     return res.status(401).json({
