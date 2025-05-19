@@ -10,7 +10,7 @@ import connectDB from "./dbConnect";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import inventoryRoutes from "./routes/inventoryRoutes";
-
+import zoneRoutes from "./routes/zoneRoutes"
 import DatabaseRoutes from "./routes/DatabaseRoutes";
 
 dotenv.config();
@@ -45,6 +45,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/db", DatabaseRoutes);
+app.use("/api/zone", zoneRoutes);
+
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
