@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { verifyToken } from "../Jwt";
 import responseCode, { responseMessage } from "../utils/resonseCode";
 import { findBusinessById } from "../controllers/authController";
-import { IBusiness } from "../interface/businessTypes";
+import { IBusiness } from "../interface/business.interface";
 interface AuthRequest extends Request {
   tokenDetails?: {
     businessId: string | number;

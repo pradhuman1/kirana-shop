@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import Business from "../models/Business.Model";
 import responseCode, { responseMessage } from "../utils/resonseCode";
 import { generateToken, verifyToken } from "../Jwt";
-import { IBusiness } from "../interface/businessTypes";
+import { IBusiness } from "../interface/business.interface";
 
 interface AuthRequest extends Request {
   tokenDetails?: {
@@ -199,8 +199,8 @@ interface UpdateBusinessData {
   email?: string;
   type?: string;
   locationCoordinates?: {
-    latitude: number;
-    longitude: number;
+    latitude: string;
+    longitude: string;
   };
   address?: {
     street?: string;
@@ -244,6 +244,13 @@ const validateBusinessData = (businessData: UpdateBusinessData) => {
   return isValid;
 };
 
+export const computeZone = (
+  latitude: string,
+  longitude: string
+) => {
+  return "682b8575539fd91045462040";
+}
+
 export const updateBusiness = async (
   req: AuthRequest,
   res: Response,
@@ -263,7 +270,22 @@ export const updateBusiness = async (
         .status(400)
         .json({ message: "Business ID not found in token" });
     }
-    const business = await Business.findByIdAndUpdate(businessId, businessData);
+
+    const latitude = businessData?.locationCoordinates?.latitude;
+    const longitude = businessData?.locationCoordinates?.longitude;
+
+    if (!latitude || !longitude) {
+      return res.status(400).json({ message: "Latitude and longitude are required to compute zone" });
+    }
+
+    const zoneId = computeZone(latitude, longitude);
+
+    const updatedBusinessData = {
+      ...businessData,
+      zoneId
+    };
+
+    const business = await Business.findByIdAndUpdate(businessId, updatedBusinessData);
     return res.status(200).json({
       message: "Business updated successfully",
       code: responseCode.SUCCESS,

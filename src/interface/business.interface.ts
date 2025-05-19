@@ -1,10 +1,12 @@
+import { BusinessType } from "../enums/BusinessType";
+
 export interface IBusiness {
   name?: string;
   email?: string;
-  type?: string;
+  type?: BusinessType;
   locationCoordinates?: {
-    latitude: number;
-    longitude: number;
+    latitude: string;
+    longitude: string;
   };
   address?: {
     street?: string;
@@ -12,4 +14,5 @@ export interface IBusiness {
     state?: string;
     zipCode?: string;
   };
+  zoneID?: Number | String
 }

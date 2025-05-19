@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Zone from "../models/Zone.Model";
-import {IZone} from "../interface/ZoneInterface"
+import {IZone} from "../interface/zone.interface"
 
 export const addZone = async (
   req: Request,

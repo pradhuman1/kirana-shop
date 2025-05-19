@@ -1,3 +1,4 @@
+import { BusinessType } from "../enums/BusinessType";
 import mongoose from "mongoose";
 //import bcrypt from "bcryptjs";
 
@@ -5,10 +6,14 @@ const businessSchema = new mongoose.Schema({
   name: { type: String, required: true },
   phone: { type: String, required: true, unique: true },
   email: { type: String, unique: true, sparse: true },
-  type: { type: String },
+  type: {
+    type: String,
+    enum: Object.values(BusinessType),
+    required: false,
+  },
   locationCoordinates: {
-    latitude: { type: Number },
-    longitude: { type: Number },
+    latitude: { type: String },
+    longitude: { type: String },
   },
   address: {
     street: { type: String },
@@ -18,6 +23,7 @@ const businessSchema = new mongoose.Schema({
     country: { type: String, default: "India" }, // you can set defaults too },
     addressLine1: { type: String },
   },
+  zoneId: { type: mongoose.Schema.Types.ObjectId, required: false },
 });
 
 // Compare entered password with hashed password
