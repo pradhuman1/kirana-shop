@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { CheckIfBusinessExists, CheckIfProductExists } from "./DataUtils";
 
-import Inventory from "./Inventory.Model";
+import Inventory from "./models/Inventory.Model";
 
 type productId = Number | string;
 

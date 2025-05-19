@@ -7,7 +7,7 @@ import {
   signupNew,
   verifyOtpAndCreateBusiness,
   updateBusiness,
-} from "./authController";
+} from "../controllers/authController";
 
 const router = express.Router();
 

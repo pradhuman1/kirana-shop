@@ -1,5 +1,5 @@
 import express from "express";
-import { dropCollection } from "./dbUtilsController";
+import { dropCollection } from "../controllers/dbUtilsController";
 
 const router = express.Router();
 

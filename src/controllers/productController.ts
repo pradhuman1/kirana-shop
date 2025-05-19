@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import Product from "./Product.Model";
-import { scrapProduct } from "./scrappers/index"
+import Product from "../models/Product.Model";
+import { scrapProduct } from "../scrappers/index"
 import fs from 'fs';
 import csv from 'csv-parser';
 import {

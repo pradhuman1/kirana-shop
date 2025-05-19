@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { verifyToken } from "../Jwt";
 import responseCode, { responseMessage } from "../utils/resonseCode";
-import { findBusinessById } from "../authController";
-import { IBusiness } from "../businessTypes";
+import { findBusinessById } from "../controllers/authController";
+import { IBusiness } from "../interface/businessTypes";
 interface AuthRequest extends Request {
   tokenDetails?: {
     businessId: string | number;

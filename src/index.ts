@@ -7,12 +7,11 @@ import cors from "cors";
 import { authenticateToken } from "./middleware/authMiddleware";
 
 import connectDB from "./dbConnect";
-import authRoutes from "./authRoutes";
-import productRoutes from "./productRoutes";
-import inventoryRoutes from "./inventoryRoutes";
+import authRoutes from "./routes/authRoutes";
+import productRoutes from "./routes/productRoutes";
+import inventoryRoutes from "./routes/inventoryRoutes";
 
-import DatabaseRoutes from "./DatabaseRoutes";
-import CronRoutes from "./cron/cronRoutes";
+import DatabaseRoutes from "./routes/DatabaseRoutes";
 
 dotenv.config();
 
@@ -46,7 +45,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/db", DatabaseRoutes);
-app.use("/api/cron", CronRoutes);
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);

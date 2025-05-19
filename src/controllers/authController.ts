@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import Business from "./Business.Model";
-import responseCode, { responseMessage } from "./utils/resonseCode";
-import { generateToken, verifyToken } from "./Jwt";
-import { IBusiness } from "./businessTypes";
+import Business from "../models/Business.Model";
+import responseCode, { responseMessage } from "../utils/resonseCode";
+import { generateToken, verifyToken } from "../Jwt";
+import { IBusiness } from "../interface/businessTypes";
 
 interface AuthRequest extends Request {
   tokenDetails?: {

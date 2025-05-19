@@ -1,5 +1,5 @@
-import Business from "./Business.Model";
-import Product from "./Product.Model";
+import Business from "../models/Business.Model";
+import Product from "../models/Product.Model";
 
 // @todo: Create a generic ts  type for businessId
 export const CheckIfBusinessExists = async (businessId: Number | String) => {
