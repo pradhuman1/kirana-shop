@@ -14,7 +14,7 @@ interface InventoryBody {
 }
 
 export const getZoneInventory = async( // filter out of stock items
-  zoneId: string
+  zoneId: string | number
 ): Promise<any> => {
   try{
     if(!zoneId) throw new Error("Empty zone ID")

@@ -14,5 +14,5 @@ export interface IBusiness {
     state?: string;
     zipCode?: string;
   };
-  zoneId?: Number | String
+  zoneId?: string | number
 }
