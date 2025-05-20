@@ -3,12 +3,7 @@ import Business from "../models/Business.Model";
 import responseCode, { responseMessage } from "../utils/resonseCode";
 import { generateToken, verifyToken } from "../Jwt";
 import { IBusiness } from "../interface/business.interface";
-
-interface AuthRequest extends Request {
-  tokenDetails?: {
-    businessId: string | number;
-  };
-}
+import { AuthRequest } from "../interface/authRequest.interface"
 
 export const testController = (req: Request, res: Response) => {
   res.send("test controller called");
@@ -248,7 +243,7 @@ export const computeZone = (
   latitude: string,
   longitude: string
 ) => {
-  return "682b8575539fd91045462040";
+  return "682b8575539fd91045462040"; // to be updated later
 }
 
 export const updateBusiness = async (

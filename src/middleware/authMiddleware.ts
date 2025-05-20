@@ -4,13 +4,7 @@ import { verifyToken } from "../Jwt";
 import responseCode, { responseMessage } from "../utils/resonseCode";
 import { findBusinessById } from "../controllers/authController";
 import { IBusiness } from "../interface/business.interface";
-interface AuthRequest extends Request {
-  tokenDetails?: {
-    businessId: string | number;
-    // add other user fields you store in token
-  };
-  businessDetails?: IBusiness;
-}
+import { AuthRequest } from "../interface/authRequest.interface";
 
 export const authenticateToken = async (
   req: AuthRequest,
@@ -39,8 +33,8 @@ export const authenticateToken = async (
     );
     req.businessDetails = business as IBusiness;
 
-    console.log("req.tokenDetails", req.tokenDetails);
-    console.log("req.businessDetails", req.businessDetails);
+    // console.log("req.tokenDetails", req.tokenDetails);
+    // console.log("req.businessDetails", req.businessDetails);
     next();
   } catch (error) {
     return res.status(401).json({

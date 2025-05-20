@@ -4,7 +4,7 @@ import { scrapProduct } from "../scrappers/index"
 import fs from 'fs';
 import csv from 'csv-parser';
 import {
-  getAllInventory
+  getZoneInventory
 } from "./InventoryController"
 
 interface ProductBody {
@@ -309,7 +309,7 @@ export const searchProducts = async (
       .map(result => result.doc);
 
     // Stage 5: Filter by userType and inventory
-    const zoneInventoryData = await getAllInventory(zoneId);
+    const zoneInventoryData = await getZoneInventory(zoneId);
     const filteredResults = filterResults(userType, globalRankedResults, zoneInventoryData);
 
     // Stage 6: Final pagination on filtered data
@@ -403,7 +403,7 @@ const filterResults = (
   if (userType === "CONSUMER") {
     return productData.filter((product) => {
       const inv = inventoryMap.get(product._id.toString());
-      return inv && !inv.markUnavailable;
+      return inv && inv.quantity > 0;
     });
   }
 
