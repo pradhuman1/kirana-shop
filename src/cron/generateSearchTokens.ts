@@ -1,4 +1,4 @@
-import Product from "../Product.Model";
+import Product from "../models/Product.Model";
 import { Request, Response, NextFunction } from "express";
 
 function tokenize(...parts: (string | undefined | null)[]): string[] {

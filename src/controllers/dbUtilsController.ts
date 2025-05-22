@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import connectDB from "./dbConnect";
+import connectDB from "../dbConnect";
 
 export const dropCollection = async (
   req: Request,

@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from "express";
-import Product from "./Product.Model";
-import { scrapProduct } from "./scrappers/index"
+import Product from "../models/Product.Model";
+import { scrapProduct } from "../scrappers/index"
 import fs from 'fs';
 import csv from 'csv-parser';
 import {
-  getAllInventory
+  getZoneInventory
 } from "./InventoryController"
+import { AuthRequest } from "../interface/authRequest.interface";
+import { BusinessType } from "../enums/BusinessType";
 
 interface ProductBody {
   productTitle: string;
@@ -257,16 +259,18 @@ export const searchProductByEan = async (
 }
 
 export const searchProducts = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<any> => {
   try {
     const { searchTerm, page = 1, pageSize = 100 } = req.body;
-    const zoneId = "123"; // to be changed
-    const userType = "KIRANA"; // to be changed
+    const zoneId = req.businessDetails?.zoneId
+    const userType = req.businessDetails?.type
 
     if (!searchTerm) throw new Error("No search term provided");
+    if (!zoneId) throw new Error("No zone Provided")
+    if (!userType) throw new Error("No user Type Provided")
 
     const tokens = tokenize(searchTerm);
     const fetchLimit = 1000;
@@ -309,7 +313,7 @@ export const searchProducts = async (
       .map(result => result.doc);
 
     // Stage 5: Filter by userType and inventory
-    const zoneInventoryData = await getAllInventory(zoneId);
+    const zoneInventoryData = await getZoneInventory(zoneId);
     const filteredResults = filterResults(userType, globalRankedResults, zoneInventoryData);
 
     // Stage 6: Final pagination on filtered data
@@ -400,14 +404,14 @@ const filterResults = (
     inventoryMap.set(inv.productId.toString(), inv);
   }
 
-  if (userType === "CONSUMER") {
+  if (userType === BusinessType.CONSUMER) {
     return productData.filter((product) => {
       const inv = inventoryMap.get(product._id.toString());
-      return inv && !inv.markUnavailable;
+      return inv && inv.quantity > 0;
     });
   }
 
-  if (userType === "KIRANA") {
+  if (userType === BusinessType.KIRANA) {
     return productData.filter(
       (product) => !inventoryMap.has(product._id.toString())
     );

@@ -20,7 +20,6 @@ const inventorySchema = new mongoose.Schema({
     required: true,
   },
   quantity: { type: Number, required: true },
-  markUnavailable: { type: Boolean },
   zoneId: {
     type: String, // to be changed to mongoose.Schema.Types.ObjectId
     required: true

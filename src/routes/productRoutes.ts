@@ -11,7 +11,7 @@ import {
   generateProduct,
   searchProducts,
   searchProductByEan
-} from "./productController";
+} from "../controllers/productController";
 
 const router = express.Router();
 
