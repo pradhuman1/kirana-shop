@@ -8,8 +8,21 @@ export const generateToken = (payload: String) => {
   });
 };
 
-export const verifyToken = (token: string) => {
-  return jwt.verify(token, process.env.JWT_SECRET as string);
+export const verifyToken = async (
+  token: string
+): Promise<{ isValid: boolean; error?: string }> => {
+  try {
+    jwt.verify(token, process.env.JWT_SECRET as string);
+    return { isValid: true };
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      return { isValid: false, error: "Token has expired" };
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return { isValid: false, error: "Invalid token" };
+    }
+    return { isValid: false, error: "Token verification failed" };
+  }
 };
 
 export const decodeToken = (token: string) => {

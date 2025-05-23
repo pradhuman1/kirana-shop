@@ -9,6 +9,8 @@ import {
   updateBusiness,
 } from "../controllers/authController";
 
+import { authenticateToken } from "../middleware/authMiddleware";
+
 const router = express.Router();
 
 // Signup route

@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { verifyToken } from "../Jwt";
 import responseCode, { responseMessage } from "../utils/resonseCode";
@@ -13,19 +13,24 @@ export const authenticateToken = async (
 ): Promise<any> => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-  console.log("token", token);
+  console.log("token at auth middleware", token);
   if (!token) {
-    return res.status(401).json({ message: "No token provided" });
+    return res.status(401).json({
+      message: "No token provided",
+      code: responseCode.INVALID_AUTH,
+    });
   }
 
   try {
-    const isTokenValid = await verifyToken(token);
-    if (!isTokenValid) {
+    const { isValid, error } = await verifyToken(token);
+    if (!isValid) {
+      console.log("Token validation failed:", error);
       return res.status(401).json({
-        message: responseMessage.INVALID_AUTH,
+        message: error || responseMessage.INVALID_AUTH,
         code: responseCode.INVALID_AUTH,
       });
     }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
     req.tokenDetails = decoded as { businessId: string | number };
     const business = await findBusinessById(
@@ -37,8 +42,10 @@ export const authenticateToken = async (
     // console.log("req.businessDetails", req.businessDetails);
     next();
   } catch (error) {
+    console.error("Auth middleware error:", error);
     return res.status(401).json({
-      message: responseMessage.INVALID_AUTH,
+      message:
+        error instanceof Error ? error.message : responseMessage.INVALID_AUTH,
       code: responseCode.INVALID_AUTH,
     });
   }

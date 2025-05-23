@@ -3,7 +3,7 @@ import Business from "../models/Business.Model";
 import responseCode, { responseMessage } from "../utils/resonseCode";
 import { generateToken, verifyToken } from "../Jwt";
 import { IBusiness } from "../interface/business.interface";
-import { AuthRequest } from "../interface/authRequest.interface"
+import { AuthRequest } from "../interface/authRequest.interface";
 
 export const testController = (req: Request, res: Response) => {
   res.send("test controller called");
@@ -84,12 +84,13 @@ export const verifyOtpAndCreateBusiness = async (
   res: Response,
   next: NextFunction
 ): Promise<any> => {
-  const { businessName, phoneNumber, otp } = req.body;
+  const { businessName, phoneNumber, otp, type } = req.body;
   try {
     console.log({
       businessName,
       phoneNumber,
       otp,
+      type,
       flow: "verifyOtpAndCreateBusiness",
     });
     if (otp !== dummy_otp) {
@@ -111,6 +112,7 @@ export const verifyOtpAndCreateBusiness = async (
       const business = await Business.create({
         name: businessName,
         phone: phoneNumber,
+        type,
       });
       const token = generateToken(business._id.toString());
 
@@ -239,12 +241,9 @@ const validateBusinessData = (businessData: UpdateBusinessData) => {
   return isValid;
 };
 
-export const computeZone = (
-  latitude: string,
-  longitude: string
-) => {
+export const computeZone = (latitude: string, longitude: string) => {
   return "682b8575539fd91045462040"; // to be updated later
-}
+};
 
 export const updateBusiness = async (
   req: AuthRequest,
@@ -254,6 +253,7 @@ export const updateBusiness = async (
   const { businessData }: UpdateBusinessBody = req.body;
   const tokenDetails = req.tokenDetails;
   const businessId = tokenDetails?.businessId;
+  console.log("updateBusiness", businessId);
 
   try {
     const isValid = validateBusinessData(businessData);
@@ -269,18 +269,25 @@ export const updateBusiness = async (
     const latitude = businessData?.locationCoordinates?.latitude;
     const longitude = businessData?.locationCoordinates?.longitude;
 
-    if (!latitude || !longitude) {
-      return res.status(400).json({ message: "Latitude and longitude are required to compute zone" });
-    }
+    // if (!latitude || !longitude) {
+    //   return res.status(400).json({
+    //     message: "Latitude and longitude are required to compute zone",
+    //   });
+    // }
 
-    const zoneId = computeZone(latitude, longitude);
+    const zoneId =
+      latitude && longitude ? computeZone(latitude, longitude) : null;
 
     const updatedBusinessData = {
       ...businessData,
-      zoneId
+      zoneId,
     };
 
-    const business = await Business.findByIdAndUpdate(businessId, updatedBusinessData);
+    const business = await Business.findByIdAndUpdate(
+      businessId,
+      updatedBusinessData
+    );
+    console.log("business before sending response", business);
     return res.status(200).json({
       message: "Business updated successfully",
       code: responseCode.SUCCESS,

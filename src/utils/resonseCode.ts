@@ -3,6 +3,7 @@ const responseCode = {
   SUCCESS: 200, // generic success code for all api
   INVALID_AUTH: 401,
   INVALID_OTP: 600,
+  INTERNAL_SERVER_ERROR: 500,
 };
 
 export const responseMessage = {

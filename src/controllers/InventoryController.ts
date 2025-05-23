@@ -1,10 +1,13 @@
 import { Request, Response, NextFunction } from "express";
-import { CheckIfBusinessExists, CheckIfProductExists, CheckIfInventoryExists } from "../utils/DataUtils";
+import {
+  CheckIfBusinessExists,
+  CheckIfProductExists,
+  CheckIfInventoryExists,
+} from "../utils/DataUtils";
 import { AuthRequest } from "../interface/authRequest.interface";
 
 import Inventory from "../models/Inventory.Model";
 import Product from "../models/Product.Model";
-
 
 type productId = string | number;
 
@@ -13,20 +16,20 @@ interface InventoryBody {
   quantity?: Number;
 }
 
-export const getZoneInventory = async( // filter out of stock items
+export const getZoneInventory = async (
+  // filter out of stock items
   zoneId: string | number
 ): Promise<any> => {
-  try{
-    if(!zoneId) throw new Error("Empty zone ID")
+  try {
+    if (!zoneId) throw new Error("Empty zone ID");
     const zoneInventoryData = await Inventory.find({
-      zoneId
-    })
+      zoneId,
+    });
     return zoneInventoryData;
-  }catch(error){
+  } catch (error) {
     return error;
   }
-}
-
+};
 
 export const addInventory = async (
   req: AuthRequest,
@@ -39,14 +42,16 @@ export const addInventory = async (
     const zoneId = req.businessDetails?.zoneId;
 
     if (!businessId) {
-      return res.status(400).json({ message: "Business ID not found in token" });
+      return res
+        .status(400)
+        .json({ message: "Business ID not found in token" });
     }
 
     if (!productId) {
       return res.status(400).json({ message: "Product ID is required" });
     }
 
-    if (Number(quantity) <= 0) {
+    if (Number(quantity) < 0) {
       return res.status(400).json({ message: "Invalid quantity" });
     }
 
@@ -57,11 +62,15 @@ export const addInventory = async (
     ]);
 
     if (!businessExists) {
-      return res.status(404).json({ message: `Business with ID ${businessId} doesn't exist` });
+      return res
+        .status(404)
+        .json({ message: `Business with ID ${businessId} doesn't exist` });
     }
 
     if (!productExists) {
-      return res.status(404).json({ message: `Product with ID ${productId} doesn't exist` });
+      return res
+        .status(404)
+        .json({ message: `Product with ID ${productId} doesn't exist` });
     }
 
     if (inventoryExists) {
@@ -75,12 +84,11 @@ export const addInventory = async (
     return res.status(200).json({
       message: `Product ${productId} successfully added to inventory of business ${businessId}`,
     });
-
   } catch (error) {
-      next(error);
-      res.status(500).json({
-        message: `Something went wrong  ${error}`,
-      });
+    next(error);
+    res.status(500).json({
+      message: `Something went wrong  ${error}`,
+    });
   }
 };
 export const getBusinessInventory = async (
@@ -91,7 +99,9 @@ export const getBusinessInventory = async (
   try {
     const businessId = req.tokenDetails?.businessId;
     if (!businessId) {
-      return res.status(400).json({ message: "Business ID not found in token" });
+      return res
+        .status(400)
+        .json({ message: "Business ID not found in token" });
     }
 
     const inventoryData = await Inventory.find({ businessId })
@@ -104,8 +114,8 @@ export const getBusinessInventory = async (
       const product = (productDoc as any).toObject();
       return {
         ...product,
-        quantity: item.quantity
-      }
+        quantity: item.quantity,
+      };
     });
 
     return res.status(200).json({ inventory: formattedInventory });
@@ -132,7 +142,10 @@ export const deleteInventory = async (
 
     console.log(`Deleting inventory for business ${businessId}`);
 
-    const existingInventory = await Inventory.findOne({ businessId, productId });
+    const existingInventory = await Inventory.findOne({
+      businessId,
+      productId,
+    });
 
     if (!existingInventory) {
       return res.status(404).json({
@@ -181,7 +194,7 @@ export const updateInventory = async (
     }
     const existingInventory = await Inventory.findOne({
       businessId,
-      productId
+      productId,
     });
 
     if (!existingInventory) {
@@ -191,7 +204,7 @@ export const updateInventory = async (
     }
 
     const dataToUpdate: UpdateInventoryData = {};
-    
+
     if (updateData.quantity !== undefined) {
       dataToUpdate["quantity"] = updateData.quantity;
     }
