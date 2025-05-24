@@ -13,7 +13,6 @@ export const authenticateToken = async (
 ): Promise<any> => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-  console.log("token at auth middleware", token);
   if (!token) {
     return res.status(401).json({
       message: "No token provided",
@@ -37,9 +36,6 @@ export const authenticateToken = async (
       req.tokenDetails.businessId as string
     );
     req.businessDetails = business as IBusiness;
-
-    // console.log("req.tokenDetails", req.tokenDetails);
-    // console.log("req.businessDetails", req.businessDetails);
     next();
   } catch (error) {
     console.error("Auth middleware error:", error);

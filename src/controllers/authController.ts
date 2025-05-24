@@ -3,7 +3,8 @@ import Business from "../models/Business.Model";
 import responseCode, { responseMessage } from "../utils/resonseCode";
 import { generateToken, verifyToken } from "../Jwt";
 import { IBusiness } from "../interface/business.interface";
-import { AuthRequest } from "../interface/authRequest.interface";
+import { AuthRequest } from "../interface/authRequest.interface"
+import { BusinessType } from "../enums/BusinessType";
 
 export const testController = (req: Request, res: Response) => {
   res.send("test controller called");
@@ -194,7 +195,7 @@ export const verifyOtpAndCreateBusiness = async (
 interface UpdateBusinessData {
   name?: string;
   email?: string;
-  type?: string;
+  type?: BusinessType;
   locationCoordinates?: {
     latitude: string;
     longitude: string;
