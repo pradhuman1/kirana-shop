@@ -8,23 +8,7 @@ import {
 } from "./InventoryController"
 import { AuthRequest } from "../interface/authRequest.interface";
 import { BusinessType } from "../enums/BusinessType";
-
-interface ProductBody {
-  productTitle: string;
-  scrappedSource: string;
-  scrappedUrl: string;
-  weight: string;
-  price: string;
-  scrappedSellingPrice: string;
-  category: [string]
-  ean: string;
-  packDesc: string;
-  brand: string;
-  unit: string;
-  variantIds: [string | Number];
-  imagesUrl: [string]
-  commission: string;
-}
+import { SearchProductResult } from "../interface/product.interface";
 
 /*id:,name:"Parl G",imgUrl:"",price:"",commission:""*/
 
@@ -207,15 +191,6 @@ const updateVariantIDs = async(
   }
 };
 
-interface SearchProductResult {
-  productID: string,
-  productTitle: string,
-  weight: string,
-  price: string,
-  brand: string,
-  variants?: SearchProductResult[],
-  imagesUrl: string[],
-}
 
 function tokenize(input: string): string[] {
   return input
@@ -224,7 +199,7 @@ function tokenize(input: string): string[] {
     .filter(Boolean);
 }
 
-export const searchProductByEan = async (
+export const searchProductByEan = async ( // add same zone exclusivity check
   req: Request,
   res: Response,
   next: NextFunction

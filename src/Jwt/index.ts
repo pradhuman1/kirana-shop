@@ -1,3 +1,4 @@
+import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 const JWT_EXPIRY = "24h";
@@ -27,4 +28,17 @@ export const verifyToken = async (
 
 export const decodeToken = (token: string) => {
   return jwt.decode(token);
+};
+
+export const generateTokenApi = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  const { businessId } = req.body;
+  const token = jwt.sign({ businessId }, process.env.JWT_SECRET as string, {
+    expiresIn: JWT_EXPIRY,
+  });
+  console.log(token)
+  return res.status(200).json({ token });
 };
