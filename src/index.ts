@@ -12,9 +12,9 @@ import productRoutes from "./routes/productRoutes";
 import inventoryRoutes from "./routes/inventoryRoutes";
 import zoneRoutes from "./routes/zoneRoutes";
 import DatabaseRoutes from "./routes/DatabaseRoutes";
-import orderRoutes from "./routes/orderRoutes"
-import shopOrderRoutes from "./routes/shopOrderRoutes"
-import jwtRoutes from "./routes/jwtRoutes"
+import orderRoutes from "./routes/orderRoutes";
+import shopOrderRoutes from "./routes/shopOrderRoutes";
+import jwtRoutes from "./routes/jwtRoutes";
 
 dotenv.config();
 
@@ -34,11 +34,10 @@ app.get("/healthcheck", (req: Request, res: Response) => {
 });
 
 // Auth routes - public endpoints
-app.use("/",jwtRoutes);
-app.use("/api/auth/login", authRoutes);
-app.use("/api/auth/register", authRoutes);
-app.use("/api/auth/otp", authRoutes);
-app.use("/api/auth/verify-otp-and-create-business", authRoutes);
+// app.use("/api/auth/login", authRoutes);
+// app.use("/api/auth/register", authRoutes);
+// app.use("/api/auth/otp", authRoutes);
+// app.use("/api/auth/verify-otp-and-create-business", authRoutes);
 app.use("/api/public/auth", authRoutes);
 
 // Protected routes (auth required)

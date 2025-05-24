@@ -1,5 +1,6 @@
 const responseCode = {
   BUSINESS_ALREADY_EXISTS: 100,
+  BUSINESS_NOT_FOUND: 104,
   SUCCESS: 200, // generic success code for all api
   INVALID_AUTH: 401,
   INVALID_OTP: 600,
@@ -12,6 +13,7 @@ export const responseMessage = {
   OTP_SENT_SUCCESSFULLY: "OTP sent successfully",
   INVALID_OTP: "OTP is not correct",
   INVALID_AUTH: "Invalid token,user not authorized",
+  BUSINESS_LOGGED_IN_SUCCESSFULLY: "Business logged in successfully",
 };
 
 export default responseCode;

@@ -7,6 +7,8 @@ import {
   signupNew,
   verifyOtpAndCreateBusiness,
   updateBusiness,
+  initiateLogin,
+  verifyOtpAndLogin,
 } from "../controllers/authController";
 
 import { authenticateToken } from "../middleware/authMiddleware";
@@ -14,10 +16,12 @@ import { authenticateToken } from "../middleware/authMiddleware";
 const router = express.Router();
 
 // Signup route
-// router.post("/signup", signup);
 router.post("/signup-new", signupNew);
 router.get("/get-all-businesses", getAllBusiness);
 router.post("/verify-otp-and-create-business", verifyOtpAndCreateBusiness);
+router.post("/initiate-login", initiateLogin);
+router.post("/verify-otp-and-login", verifyOtpAndLogin);
+
 //router.post("/update-business", updateBusiness);
 // router.post(
 //   "/update-business",

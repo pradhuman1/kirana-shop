@@ -80,12 +80,82 @@ export const signupNew = async (
   }
 };
 
+export const initiateLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  const { phoneNumber } = req.body;
+  try {
+    const businessExists = await Business.findOne({
+      phone: phoneNumber,
+    });
+    if (!businessExists) {
+      return res.status(400).json({
+        message: "Business does not exist,signup instead",
+        code: responseCode.BUSINESS_NOT_FOUND,
+      });
+    }
+    if (businessExists) {
+      return res.status(200).json({
+        message: `OTP sent successfully to ${phoneNumber}`,
+        code: responseCode.SUCCESS,
+      });
+    }
+  } catch (error) {
+    next();
+  }
+};
+
+export const verifyOtpAndLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  const { phoneNumber, otp } = req.body;
+  try {
+    const business = await Business.findOne({
+      phone: phoneNumber,
+    });
+    if (!business) {
+      return res.status(400).json({
+        message: "Business does not exist,signup instead",
+        code: responseCode.BUSINESS_NOT_FOUND,
+      });
+    }
+    if (otp !== dummy_otp) {
+      return res.status(400).json({
+        message: responseMessage.INVALID_OTP,
+        code: responseCode.INVALID_OTP,
+      });
+    } else {
+      const token = generateToken(business._id.toString());
+
+      return res.status(200).json({
+        id: business._id,
+        name: business.name,
+        code: responseCode.SUCCESS,
+        token: token,
+        message: responseMessage.BUSINESS_LOGGED_IN_SUCCESSFULLY,
+      });
+    }
+  } catch (error) {
+    next();
+  }
+};
+
 export const verifyOtpAndCreateBusiness = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<any> => {
-  const { businessName, phoneNumber, otp, type } = req.body;
+  const {
+    businessName,
+    phoneNumber,
+    otp,
+    type,
+    flow = "verifyOtpAndCreateBusiness",
+  } = req.body;
   try {
     console.log({
       businessName,
