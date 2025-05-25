@@ -3,8 +3,13 @@ import Business from "../models/Business.Model";
 import responseCode, { responseMessage } from "../utils/resonseCode";
 import { generateToken, verifyToken } from "../Jwt";
 import { IBusiness } from "../interface/business.interface";
-import { AuthRequest } from "../interface/authRequest.interface"
+import { AuthRequest } from "../interface/authRequest.interface";
 import { BusinessType } from "../enums/BusinessType";
+import otpService from "../services/otpService";
+
+// Configuration for testing
+const USE_DUMMY_OTP = true;
+const DUMMY_OTP = "123456";
 
 export const testController = (req: Request, res: Response) => {
   res.send("test controller called");
@@ -48,7 +53,6 @@ apis
 
 
 */
-const dummy_otp = "1234";
 export const signupNew = async (
   req: Request,
   res: Response,
@@ -60,6 +64,7 @@ export const signupNew = async (
       businessName,
       phoneNumber,
       flow: "signupCreateIfNew",
+      usingDummyOTP: USE_DUMMY_OTP,
     });
     const businessExists = await Business.findOne({
       phone: phoneNumber,
@@ -71,12 +76,28 @@ export const signupNew = async (
       });
     }
 
+    if (USE_DUMMY_OTP) {
+      return res.status(200).json({
+        message: `OTP sent successfully to ${phoneNumber} (Dummy OTP: ${DUMMY_OTP})`,
+        code: responseCode.SUCCESS,
+      });
+    }
+
+    // Send OTP using OTP service
+    const otpResult = await otpService.sendOTP(phoneNumber);
+    if (!otpResult.success) {
+      return res.status(400).json({
+        message: otpResult.message,
+        code: responseCode.OTP_SEND_FAILED,
+      });
+    }
+
     return res.status(200).json({
-      message: "OTP sent successfully",
+      message: `OTP sent successfully to ${phoneNumber}`,
       code: responseCode.SUCCESS,
     });
   } catch (error) {
-    next();
+    next(error);
   }
 };
 
@@ -92,18 +113,33 @@ export const initiateLogin = async (
     });
     if (!businessExists) {
       return res.status(400).json({
-        message: "Business does not exist,signup instead",
+        message: "Business does not exist, signup instead",
         code: responseCode.BUSINESS_NOT_FOUND,
       });
     }
-    if (businessExists) {
+
+    if (USE_DUMMY_OTP) {
       return res.status(200).json({
-        message: `OTP sent successfully to ${phoneNumber}`,
+        message: `OTP sent successfully to ${phoneNumber} (Dummy OTP: ${DUMMY_OTP})`,
         code: responseCode.SUCCESS,
       });
     }
+
+    // Send OTP using OTP service
+    const otpResult = await otpService.sendOTP(phoneNumber);
+    if (!otpResult.success) {
+      return res.status(400).json({
+        message: otpResult.message,
+        code: responseCode.OTP_SEND_FAILED,
+      });
+    }
+
+    return res.status(200).json({
+      message: `OTP sent successfully to ${phoneNumber}`,
+      code: responseCode.SUCCESS,
+    });
   } catch (error) {
-    next();
+    next(error);
   }
 };
 
@@ -119,28 +155,39 @@ export const verifyOtpAndLogin = async (
     });
     if (!business) {
       return res.status(400).json({
-        message: "Business does not exist,signup instead",
+        message: "Business does not exist, signup instead",
         code: responseCode.BUSINESS_NOT_FOUND,
       });
     }
-    if (otp !== dummy_otp) {
-      return res.status(400).json({
-        message: responseMessage.INVALID_OTP,
-        code: responseCode.INVALID_OTP,
-      });
-    } else {
-      const token = generateToken(business._id.toString());
 
-      return res.status(200).json({
-        id: business._id,
-        name: business.name,
-        code: responseCode.SUCCESS,
-        token: token,
-        message: responseMessage.BUSINESS_LOGGED_IN_SUCCESSFULLY,
-      });
+    if (USE_DUMMY_OTP) {
+      if (otp !== DUMMY_OTP) {
+        return res.status(400).json({
+          message: "Invalid OTP",
+          code: responseCode.INVALID_OTP,
+        });
+      }
+    } else {
+      // Verify OTP using OTP service
+      const verifyResult = await otpService.verifyOTP(phoneNumber, otp);
+      if (!verifyResult.success) {
+        return res.status(400).json({
+          message: verifyResult.message,
+          code: responseCode.INVALID_OTP,
+        });
+      }
     }
+
+    const token = generateToken(business._id.toString());
+    return res.status(200).json({
+      id: business._id,
+      name: business.name,
+      code: responseCode.SUCCESS,
+      token: token,
+      message: responseMessage.BUSINESS_LOGGED_IN_SUCCESSFULLY,
+    });
   } catch (error) {
-    next();
+    next(error);
   }
 };
 
@@ -163,13 +210,27 @@ export const verifyOtpAndCreateBusiness = async (
       otp,
       type,
       flow: "verifyOtpAndCreateBusiness",
+      usingDummyOTP: USE_DUMMY_OTP,
     });
-    if (otp !== dummy_otp) {
-      return res.status(400).json({
-        message: responseMessage.INVALID_OTP,
-        code: responseCode.INVALID_OTP,
-      });
+
+    if (USE_DUMMY_OTP) {
+      if (otp !== DUMMY_OTP) {
+        return res.status(400).json({
+          message: "Invalid OTP",
+          code: responseCode.INVALID_OTP,
+        });
+      }
+    } else {
+      // Verify OTP using OTP service
+      const verifyResult = await otpService.verifyOTP(phoneNumber, otp);
+      if (!verifyResult.success) {
+        return res.status(400).json({
+          message: verifyResult.message,
+          code: responseCode.INVALID_OTP,
+        });
+      }
     }
+
     const businessExists = await Business.findOne({
       phone: phoneNumber,
     });
@@ -179,28 +240,27 @@ export const verifyOtpAndCreateBusiness = async (
         code: responseCode.BUSINESS_ALREADY_EXISTS,
       });
     }
-    if (!businessExists) {
-      const business = await Business.create({
-        name: businessName,
-        phone: phoneNumber,
-        type,
-      });
-      const token = generateToken(business._id.toString());
 
-      return res.status(200).json({
-        id: business._id,
-        name: business.name,
-        code: responseCode.SUCCESS,
-        token: token,
-        message: responseMessage.BUSINESS_CREATED_SUCCESSFULLY,
-      });
-    }
+    const business = await Business.create({
+      name: businessName,
+      phone: phoneNumber,
+      type,
+    });
+    const token = generateToken(business._id.toString());
+
+    return res.status(200).json({
+      id: business._id,
+      name: business.name,
+      code: responseCode.SUCCESS,
+      token: token,
+      message: responseMessage.BUSINESS_CREATED_SUCCESSFULLY,
+    });
   } catch (error) {
     console.log({
       error,
       flow: "verifyOtpAndCreateBusiness",
     });
-    next();
+    next(error);
   }
 };
 

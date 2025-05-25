@@ -34,11 +34,13 @@ app.get("/healthcheck", (req: Request, res: Response) => {
 });
 
 // Auth routes - public endpoints
-// app.use("/api/auth/login", authRoutes);
-// app.use("/api/auth/register", authRoutes);
-// app.use("/api/auth/otp", authRoutes);
-// app.use("/api/auth/verify-otp-and-create-business", authRoutes);
+app.use("/api/auth/login", authRoutes);
+app.use("/api/auth/register", authRoutes);
+app.use("/api/auth/otp", authRoutes);
+app.use("/api/auth/verify-otp-and-create-business", authRoutes);
 app.use("/api/public/auth", authRoutes);
+
+// OTP routes - public endpoints
 
 // Protected routes (auth required)
 // Apply authentication middleware to all API routes EXCEPT those containing /public
@@ -56,6 +58,7 @@ app.use("/api/db", DatabaseRoutes);
 app.use("/api/zone", zoneRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/shop-order", shopOrderRoutes);
+app.use("/api/auth", authRoutes);
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
