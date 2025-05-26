@@ -1,8 +1,8 @@
 import express from "express";
 
 import { 
-    getMyShopOrders,
-    updateShopOrderStatus 
+  getMyShopOrders,
+  updateShopOrderStatus 
 } from "../controllers/ShopOrderController"
 
 const router = express.Router();
