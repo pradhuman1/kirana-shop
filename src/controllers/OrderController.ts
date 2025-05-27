@@ -5,6 +5,8 @@ import { createShopOrder } from "./ShopOrderController";
 import Order from "../models/Order.Model";
 import { ProductData } from "../interface/product.interface";
 import ShopOrder from "../models/ShopOrder.Model";
+import { sendFCMNotification } from "../utils/sendFirebasePushNotification";
+
 
 const mapProductsToBusinesses = (
   items: { productId: string; quantity: number }[],
@@ -190,5 +192,21 @@ export const updateOrderStatus = async (
     });
   }catch(error){
     return new Error(`unable to update order status: ${error}`)
+  }
+}
+
+export const sendOrderPushNotification = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<any> =>{
+  try{
+    const { fcmToken, orderDetails } = req.body;
+    const fcmResponse = await sendFCMNotification(fcmToken, orderDetails);
+    res.status(200).json({message: `Push Notification sent successfully: ${fcmResponse}`})
+  }catch(error){
+    return res.status(500).json({
+      message: `Something went wront ${error}`
+    })
   }
 }
