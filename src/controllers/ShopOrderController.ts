@@ -8,12 +8,11 @@ import { updateOrderStatus } from "./OrderController";
 const fetchProductDetails = async (productIds: string[]) => {
   const productDocs = await Product.find({ _id: { $in: productIds } });
   const productMap = new Map();
-  productDocs.forEach(product => {
+  productDocs.forEach((product) => {
     productMap.set(product._id.toString(), product);
   });
   return productMap;
 };
- 
 
 export const createShopOrder = async (
   businessId: string,
@@ -22,7 +21,7 @@ export const createShopOrder = async (
 ) => {
   try {
     let totalAmount = 0;
-    const productIds = items.map(item => item.productId);
+    const productIds = items.map((item) => item.productId);
     const productDetailsMap = await fetchProductDetails(productIds);
     for (const { productId, quantity } of items) {
       const product = productDetailsMap.get(productId);
@@ -35,12 +34,14 @@ export const createShopOrder = async (
       status: "pending",
       totalAmount,
       items,
-      orderId
+      orderId,
     });
 
     return shopOrder;
   } catch (error) {
-    throw new Error(`Failed to create shop order for business ${businessId}: ${error}`);
+    throw new Error(
+      `Failed to create shop order for business ${businessId}: ${error}`
+    );
   }
 };
 
@@ -50,7 +51,7 @@ export const getMyShopOrders = async (
   next: NextFunction
 ): Promise<any> => {
   try {
-    const businessId = req.tokenDetails?.businessId
+    const businessId = req.tokenDetails?.businessId;
 
     if (!businessId) {
       throw new Error("Business ID not found in request");
@@ -61,11 +62,11 @@ export const getMyShopOrders = async (
       .populate("items.productId")
       .lean();
 
-    const filteredOrders = allShopOrders.filter(order =>
-      ['pending', 'accepted'].includes(order.status)
+    const filteredOrders = allShopOrders.filter((order) =>
+      ["pending", "accepted"].includes(order.status)
     );
 
-    const response = filteredOrders.map(order => ({
+    const ordersList = filteredOrders.map((order) => ({
       shopOrderId: order._id.toString(),
       status: order.status,
       totalAmount: order.totalAmount,
@@ -80,17 +81,20 @@ export const getMyShopOrders = async (
           price: product.price || "",
           brand: product.brand || "",
           imagesUrl: product.imagesUrl || [],
-          quantity
+          quantity,
         };
-      })
+      }),
     }));
 
-    return res.status(200).json(response);
+    const response = {
+      ordersList: ordersList,
+    };
 
+    return res.status(200).json(response);
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: `Something went wrong: ${error}`
+      message: `Something went wrong: ${error}`,
     });
   }
 };
@@ -104,10 +108,12 @@ export const updateShopOrderStatus = async (
     const businessId = req.tokenDetails?.businessId;
     const { shopOrderId, status } = req.body;
     if (!businessId) {
-      return res.status(400).json({ message: "Business ID missing in token details" });
+      return res
+        .status(400)
+        .json({ message: "Business ID missing in token details" });
     }
 
-    if (!shopOrderId || !['accepted', 'rejected'].includes(status)) {
+    if (!shopOrderId || !["accepted", "rejected"].includes(status)) {
       return res.status(400).json({ message: "Invalid shopOrderId or status" });
     }
     const shopOrder = await ShopOrder.findById(shopOrderId);
@@ -115,8 +121,10 @@ export const updateShopOrderStatus = async (
       return res.status(404).json({ message: "Shop order not found" });
     }
 
-    if (shopOrder.status !== 'pending') {
-      return res.status(400).json({ message: "Only pending orders can be updated" });
+    if (shopOrder.status !== "pending") {
+      return res
+        .status(400)
+        .json({ message: "Only pending orders can be updated" });
     }
 
     shopOrder.status = status;
@@ -124,11 +132,10 @@ export const updateShopOrderStatus = async (
     await shopOrder.save();
 
     return res.status(200).json({ message: `Order ${status} successfully` });
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: `Something went wrong: ${error}`
+      message: `Something went wrong: ${error}`,
     });
   }
 };
