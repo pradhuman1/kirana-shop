@@ -113,7 +113,7 @@ export const initiateLogin = async (
     });
     if (!businessExists) {
       return res.status(400).json({
-        message: "Business does not exist, signup instead",
+        message: "User does not exist, signup instead",
         code: responseCode.BUSINESS_NOT_FOUND,
       });
     }
@@ -148,14 +148,14 @@ export const verifyOtpAndLogin = async (
   res: Response,
   next: NextFunction
 ): Promise<any> => {
-  const { phoneNumber, otp } = req.body;
+  const { phoneNumber, otp, fcmToken } = req.body;
   try {
     const business = await Business.findOne({
       phone: phoneNumber,
     });
     if (!business) {
       return res.status(400).json({
-        message: "Business does not exist, signup instead",
+        message: "User does not exist, signup instead",
         code: responseCode.BUSINESS_NOT_FOUND,
       });
     }
@@ -177,7 +177,10 @@ export const verifyOtpAndLogin = async (
         });
       }
     }
-
+    await Business.updateOne(
+      { _id: business._id },
+      { $set: { fcmToken } }
+    );
     const token = generateToken(business._id.toString());
     return res.status(200).json({
       id: business._id,
@@ -202,6 +205,7 @@ export const verifyOtpAndCreateBusiness = async (
     otp,
     type,
     flow = "verifyOtpAndCreateBusiness",
+    fcmToken
   } = req.body;
   try {
     console.log({
@@ -211,6 +215,7 @@ export const verifyOtpAndCreateBusiness = async (
       type,
       flow: "verifyOtpAndCreateBusiness",
       usingDummyOTP: USE_DUMMY_OTP,
+      fcmToken
     });
 
     if (USE_DUMMY_OTP) {
@@ -245,6 +250,7 @@ export const verifyOtpAndCreateBusiness = async (
       name: businessName,
       phone: phoneNumber,
       type,
+      fcmToken
     });
     const token = generateToken(business._id.toString());
 
