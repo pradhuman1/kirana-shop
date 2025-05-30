@@ -4,6 +4,8 @@ import { ProductData } from "../interface/product.interface";
 import { AuthRequest } from "../interface/authRequest.interface";
 import { NextFunction, Response } from "express";
 import { updateOrderStatus } from "./OrderController";
+import { findBusinessById } from "./authController";
+import { sendFCMNotification } from "../utils/sendFirebasePushNotification";
 
 const fetchProductDetails = async (productIds: string[]) => {
   const productDocs = await Product.find({ _id: { $in: productIds } });
@@ -21,13 +23,33 @@ export const createShopOrder = async (
 ) => {
   try {
     let totalAmount = 0;
+    const businessDetails = await findBusinessById(businessId);
+    const businessFcmToken = businessDetails?.fcmToken;
     const productIds = items.map((item) => item.productId);
     const productDetailsMap = await fetchProductDetails(productIds);
+
+    let orderLines: string[] = [];
+
     for (const { productId, quantity } of items) {
       const product = productDetailsMap.get(productId);
       if (!product) throw new Error(`Product ${productId} not found`);
+
       totalAmount += product.price * quantity;
+
+      const brand = product.brand || "";
+      let title = (product.productTitle || "").split(" ").slice(0, 2).join(" ");
+      if (title.length > 15) {
+        title = title.slice(0, 15);
+      }
+      const weight = product.weight || "";
+      const price = product.price || "";
+
+      const line = `${brand} ${title} ${weight}`.trim();
+
+      orderLines.push(line);
     }
+
+    const orderString = orderLines.join("\n");
 
     const shopOrder = await ShopOrder.create({
       businessId,
@@ -36,6 +58,12 @@ export const createShopOrder = async (
       items,
       orderId,
     });
+
+    if (businessFcmToken) {
+      await sendFCMNotification(businessFcmToken, orderString);
+    } else {
+      throw new Error("Unable to send push notification");
+    }
 
     return shopOrder;
   } catch (error) {
