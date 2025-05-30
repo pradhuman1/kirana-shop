@@ -7,7 +7,6 @@ import { ProductData } from "../interface/product.interface";
 import ShopOrder from "../models/ShopOrder.Model";
 import { sendFCMNotification } from "../utils/sendFirebasePushNotification";
 
-
 const mapProductsToBusinesses = (
   items: { productId: string; quantity: number }[],
   zoneInventory: any[]
@@ -16,7 +15,8 @@ const mapProductsToBusinesses = (
 
   for (const { productId, quantity } of items) {
     const inventories = zoneInventory.filter(
-      inv => inv.productId.toString() === productId && inv.quantity >= quantity
+      (inv) =>
+        inv.productId.toString() === productId && inv.quantity >= quantity
     );
 
     if (inventories.length === 0) {
@@ -61,8 +61,8 @@ export const generateOrder = async (
       status: "placed",
       items,
       shopOrders: [], // temporary empty list
-      totalAmount: 0,  // will update later
-      deliveryFee
+      totalAmount: 0, // will update later
+      deliveryFee,
     });
 
     const shopOrderIds = [];
@@ -70,14 +70,20 @@ export const generateOrder = async (
     // Step 2: Create shop orders with order._id
     for (const [businessId, productList] of businessOrderMap.entries()) {
       try {
-        const shopOrder = await createShopOrder(businessId, productList, order._id.toString());
+        const shopOrder = await createShopOrder(
+          businessId,
+          productList,
+          order._id.toString()
+        );
         shopOrderIds.push(shopOrder._id);
         totalAmount += shopOrder.totalAmount;
       } catch (error) {
         console.error(error);
         // Optionally roll back the order
         await Order.findByIdAndDelete(order._id);
-        return res.status(400).json({ message: `Shop order creation failed: ${error}` });
+        return res
+          .status(400)
+          .json({ message: `Shop order creation failed: ${error}` });
       }
     }
 
@@ -86,8 +92,9 @@ export const generateOrder = async (
     order.totalAmount = totalAmount;
     await order.save();
 
-    return res.status(200).json({ message: `Order created successfully`, orderId: order._id });
-
+    return res
+      .status(200)
+      .json({ message: `Order created successfully`, orderId: order._id });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: `Something went wrong: ${error}` });
@@ -100,7 +107,7 @@ export const getMyOrders = async (
   next: NextFunction
 ): Promise<any> => {
   try {
-    const customerId = req.tokenDetails?.businessId
+    const customerId = req.tokenDetails?.businessId;
 
     if (!customerId) throw new Error("Customer ID not found in request");
 
@@ -108,18 +115,18 @@ export const getMyOrders = async (
       .populate("items.productId")
       .lean();
 
-    const relevantOrders = allOrders.filter(order =>
-      ['placed', 'accepted'].includes(order.status)
+    const relevantOrders = allOrders.filter((order) =>
+      ["placed", "accepted"].includes(order.status)
     );
 
-    const response = relevantOrders.map(order => ({
+    const ordersList = relevantOrders.map((order) => ({
       orderId: order._id.toString(),
       status: order.status,
       deliveryFee: order.deliveryFee,
       totalAmount: order.totalAmount,
       createdAt: order.createdAt,
       items: order.items.map(({ productId, quantity }) => {
-        const product = productId as unknown as ProductData
+        const product = productId as unknown as ProductData;
         // productId is now a full Product document
         return {
           productID: product?._id?.toString() || "",
@@ -128,43 +135,44 @@ export const getMyOrders = async (
           price: product?.price || "",
           brand: product?.brand || "",
           imagesUrl: product?.imagesUrl || [],
-          quantity
+          quantity,
         };
-      })
+      }),
     }));
 
-    return res.status(200).json(response);
+    const response = {
+      ordersList: ordersList,
+    };
 
+    return res.status(200).json(response);
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: `Something went wrong: ${error}`
+      message: `Something went wrong: ${error}`,
     });
   }
 };
 
-export const updateOrderStatus = async (
-  orderId: string
-): Promise<any> => {
+export const updateOrderStatus = async (orderId: string): Promise<any> => {
   try {
-    console.log("updateOrderStatus")
+    console.log("updateOrderStatus");
     const order = await Order.findById(orderId).lean();
     if (!order) throw new Error("Order not found");
 
     const shopOrders = await ShopOrder.find({ _id: { $in: order.shopOrders } });
-    console.log(shopOrders)
-    console.log("updateOrderStatus")
+    console.log(shopOrders);
+    console.log("updateOrderStatus");
 
-    console.log(shopOrders.map(so => so.status));
-    console.log("updateOrderStatus")
-    
-    if (shopOrders.some(so => so.status === "pending")) {
-      return; 
+    console.log(shopOrders.map((so) => so.status));
+    console.log("updateOrderStatus");
+
+    if (shopOrders.some((so) => so.status === "pending")) {
+      return;
     }
-    console.log("updateOrderStatus")
+    console.log("updateOrderStatus");
 
     let acceptedTotal = 0;
-    const unAvailableItems: { productId: any, quantity: number }[] = [];
+    const unAvailableItems: { productId: any; quantity: number }[] = [];
 
     for (const so of shopOrders) {
       if (so.status === "accepted") {
@@ -175,11 +183,11 @@ export const updateOrderStatus = async (
     }
 
     let newStatus: "accepted" | "rejected" | "partially_accepted";
-    const statuses = shopOrders.map(so => so.status);
+    const statuses = shopOrders.map((so) => so.status);
 
-    if (statuses.every(s => s === "accepted")) {
+    if (statuses.every((s) => s === "accepted")) {
       newStatus = "accepted";
-    } else if (statuses.every(s => s === "rejected")) {
+    } else if (statuses.every((s) => s === "rejected")) {
       newStatus = "rejected";
     } else {
       newStatus = "partially_accepted";
@@ -188,25 +196,27 @@ export const updateOrderStatus = async (
     await Order.findByIdAndUpdate(orderId, {
       status: newStatus,
       totalAmount: acceptedTotal,
-      unAvailableItems
+      unAvailableItems,
     });
-  }catch(error){
-    return new Error(`unable to update order status: ${error}`)
+  } catch (error) {
+    return new Error(`unable to update order status: ${error}`);
   }
-}
+};
 
 export const sendOrderPushNotification = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
-): Promise<any> =>{
-  try{
+): Promise<any> => {
+  try {
     const { fcmToken, orderDetails } = req.body;
     const fcmResponse = await sendFCMNotification(fcmToken, orderDetails);
-    res.status(200).json({message: `Push Notification sent successfully: ${fcmResponse}`})
-  }catch(error){
+    res
+      .status(200)
+      .json({ message: `Push Notification sent successfully: ${fcmResponse}` });
+  } catch (error) {
     return res.status(500).json({
-      message: `Something went wront ${error}`
-    })
+      message: `Something went wront ${error}`,
+    });
   }
-}
+};
