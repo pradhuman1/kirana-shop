@@ -10,70 +10,6 @@ import { AuthRequest } from "../interface/authRequest.interface";
 import { BusinessType } from "../enums/BusinessType";
 import { SearchProductResult } from "../interface/product.interface";
 
-/*id:,name:"Parl G",imgUrl:"",price:"",commission:""*/
-
-/*
-
-
- productName: { type: String, required: true },
-  imgUrl: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  price: { type: String, require: true },
-  commission: { type: String, require: true },
-*/
-
-
-
-
-// export const addProduct = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ): Promise<any> => {
-//   const {
-//     product_title,
-//     product_imgURL,
-//     product_price,
-//     product_commision,
-//   }: ProductBody = req.body;
-
-//   console.log("req.body");
-//   console.log(req.body);
-
-//   try {
-//     const productExists = await Product.findOne({ email: product_title });
-
-//     if (productExists) {
-//       return res.status(400).json({ message: "Product already exists" });
-//     }
-
-//     const product = await Product.create({
-//       productTitle: product_title,
-//       imgCDNUrl: product_imgURL,
-//       price: product_price,
-//       commission: product_commision,
-//     });
-
-//     if (product) {
-//       res.status(201).json({
-//         _id: product._id,
-//         productTitle: product.productTitle,
-//         imgLink: product.imgCDNUrl,
-//         price: product.price,
-//         commission: product.commission,
-//       });
-//     } else {
-//       res.status(400).json({ message: "Invalid Product data" });
-//     }
-
-//     next();
-//   } catch (error) {
-//     next();
-//     res.status(500).json({
-//       message: `Something went wrong  ${error}`,
-//     });
-//   }
-// };
 
 export const bulkUploadProducts = async(
   req: Request,
@@ -519,4 +455,13 @@ export const generateProduct = async (
       message: `Something went wrong  ${error}`,
     });
   }
+};
+
+export const bulkFetchProductDetails = async (productIds: string[]) => {
+  const productDocs = await Product.find({ _id: { $in: productIds } });
+  const productMap = new Map();
+  productDocs.forEach((product) => {
+    productMap.set(product._id.toString(), product);
+  });
+  return productMap;
 };

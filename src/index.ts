@@ -39,6 +39,8 @@ app.use("/api/auth/register", authRoutes);
 app.use("/api/auth/otp", authRoutes);
 app.use("/api/auth/verify-otp-and-create-business", authRoutes);
 app.use("/api/public/auth", authRoutes);
+// app.use("/", jwtRoutes);
+
 
 // OTP routes - public endpoints
 

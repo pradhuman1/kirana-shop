@@ -6,7 +6,8 @@ import Order from "../models/Order.Model";
 import { ProductData } from "../interface/product.interface";
 import ShopOrder from "../models/ShopOrder.Model";
 import { sendFCMNotification } from "../utils/sendFirebasePushNotification";
-
+import { bulkFetchProductDetails } from "./productController";
+const DELIVERY_FEE = 10;
 const mapProductsToBusinesses = (
   items: { productId: string; quantity: number }[],
   zoneInventory: any[]
@@ -116,7 +117,7 @@ export const getMyOrders = async (
       .lean();
 
     const relevantOrders = allOrders.filter((order) =>
-      ["placed", "accepted"].includes(order.status)
+      ["placed", "accepted", "partially_accepted"].includes(order.status)
     );
 
     const ordersList = relevantOrders.map((order) => ({
@@ -220,3 +221,29 @@ export const sendOrderPushNotification = async (
     });
   }
 };
+
+export const getCartTotal = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const items: { productId: string; quantity: number }[] = req.body.items;
+    const productIds = items.map((item) => item.productId);
+    const productDetailsMap = await bulkFetchProductDetails(productIds);
+    let subTotal: number = 0;
+    for (const { productId, quantity } of items) {
+      const product = productDetailsMap.get(productId);
+      if (!product) throw new Error(`Product ${productId} not found`);
+      subTotal += product.price * quantity;
+    }
+    res.status(200).json({
+      subTotal,
+      deliveryFee: DELIVERY_FEE,
+      cartTotal: subTotal+DELIVERY_FEE,
+    });
+  }catch(error){
+    console.error(error);
+    return res.status(500).json({ message: `Something went wrong: ${error}` });
+  }
+}

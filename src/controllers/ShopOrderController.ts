@@ -6,15 +6,7 @@ import { NextFunction, Response } from "express";
 import { updateOrderStatus } from "./OrderController";
 import { findBusinessById } from "./authController";
 import { sendFCMNotification } from "../utils/sendFirebasePushNotification";
-
-const fetchProductDetails = async (productIds: string[]) => {
-  const productDocs = await Product.find({ _id: { $in: productIds } });
-  const productMap = new Map();
-  productDocs.forEach((product) => {
-    productMap.set(product._id.toString(), product);
-  });
-  return productMap;
-};
+import { bulkFetchProductDetails } from "./productController";
 
 export const createShopOrder = async (
   businessId: string,
@@ -26,7 +18,7 @@ export const createShopOrder = async (
     const businessDetails = await findBusinessById(businessId);
     const businessFcmToken = businessDetails?.fcmToken;
     const productIds = items.map((item) => item.productId);
-    const productDetailsMap = await fetchProductDetails(productIds);
+    const productDetailsMap = await bulkFetchProductDetails(productIds);
 
     let orderLines: string[] = [];
 
@@ -51,6 +43,11 @@ export const createShopOrder = async (
 
     const orderString = orderLines.join("\n");
 
+    if (businessFcmToken) {
+      await sendFCMNotification(businessFcmToken, orderString);
+    } else {
+      throw new Error("Unable to send push notification");
+    }
     const shopOrder = await ShopOrder.create({
       businessId,
       status: "pending",
@@ -58,13 +55,7 @@ export const createShopOrder = async (
       items,
       orderId,
     });
-
-    if (businessFcmToken) {
-      await sendFCMNotification(businessFcmToken, orderString);
-    } else {
-      throw new Error("Unable to send push notification");
-    }
-
+    
     return shopOrder;
   } catch (error) {
     throw new Error(
