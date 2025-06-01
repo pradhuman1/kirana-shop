@@ -8,7 +8,7 @@ let isInitialized = false;
 const initializeFirebase = async () => {
   if (isInitialized) return;
 
-  const serviceAccountPath = path.resolve(__dirname, "../service-account.json");
+  const serviceAccountPath = process.env.SERVICE_ACCOUNT_PATH || "/etc/secrets/service-account.json";
   const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf-8"));
 
   admin.initializeApp({
