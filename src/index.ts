@@ -41,6 +41,9 @@ app.use("/api/auth/verify-otp-and-create-business", authRoutes);
 app.use("/api/public/auth", authRoutes);
 // app.use("/", jwtRoutes);
 
+app.get("/heartbeat", (req: Request, res: Response)=>{
+  res.status(200).json({"message": "Service is running"})
+})
 
 // OTP routes - public endpoints
 
