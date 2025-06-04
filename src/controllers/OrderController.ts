@@ -114,11 +114,10 @@ export const getMyOrders = async (
 
     const allOrders = await Order.find({ customerId })
       .populate("items.productId")
+      .populate("unAvailableItems.productId")
       .lean();
 
-    const relevantOrders = allOrders.filter((order) =>
-      ["placed", "accepted", "partially_accepted"].includes(order.status)
-    );
+    const relevantOrders = allOrders;
 
     const ordersList = relevantOrders.map((order) => ({
       orderId: order._id.toString(),
@@ -127,6 +126,19 @@ export const getMyOrders = async (
       totalAmount: order.totalAmount,
       createdAt: order.createdAt,
       items: order.items.map(({ productId, quantity }) => {
+        const product = productId as unknown as ProductData;
+        // productId is now a full Product document
+        return {
+          productID: product?._id?.toString() || "",
+          productTitle: product?.productTitle || "",
+          weight: product?.weight || "",
+          price: product?.price || "",
+          brand: product?.brand || "",
+          imagesUrl: product?.imagesUrl || [],
+          quantity,
+        };
+      }),
+      unAvailableItems: order.unAvailableItems.map(({ productId, quantity }) => {
         const product = productId as unknown as ProductData;
         // productId is now a full Product document
         return {
