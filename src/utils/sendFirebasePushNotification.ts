@@ -27,7 +27,7 @@ export const sendFCMNotification = async (deviceToken: string, order: string) =>
           data: {
               title: "New Order!",
               body: order,
-              order
+              order,
           },
           android: {
               priority: "high",

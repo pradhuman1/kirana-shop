@@ -45,9 +45,8 @@ export const createShopOrder = async (
 
     if (businessFcmToken) {
       await sendFCMNotification(businessFcmToken, orderString);
-    } else {
-      throw new Error("Unable to send push notification");
     }
+    
     const shopOrder = await ShopOrder.create({
       businessId,
       status: "pending",
