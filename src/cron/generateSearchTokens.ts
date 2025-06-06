@@ -1,7 +1,7 @@
 import Product from "../models/Product.Model";
 import { Request, Response, NextFunction } from "express";
 
-function tokenize(...parts: (string | undefined | null)[]): string[] {
+export function tokenize(...parts: (string | undefined | null)[]): string[] {
     return parts
         .filter(Boolean)
         .flatMap(part => part!.toLowerCase().split(/\s+/))
@@ -18,7 +18,7 @@ export const generateSearchTokens = async (
         let count = 0;
 
         for await (const doc of cursor) {
-            const tokens = tokenize(doc.productTitle, doc.brand, doc.weight);
+            const tokens = tokenize(doc.productTitle, doc.brand, doc.weight, doc.ean);
 
             await Product.updateOne(
                 { _id: doc._id },

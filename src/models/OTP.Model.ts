@@ -40,6 +40,8 @@ const OTPSchema = new Schema({
   lastAttemptAt: {
     type: Date,
   },
+},{
+  timestamps: true
 });
 
 // Create compound index for phone number and OTP

@@ -6,6 +6,8 @@ const zoneSchema = new mongoose.Schema({
     longitude: { type: String, required: true },
   },
   backupZones: [{ type: mongoose.Schema.Types.ObjectId, ref: "Zone", required: false }],
+},{
+  timestamps: true
 });
 
 const Zone = mongoose.model("Zone", zoneSchema);
