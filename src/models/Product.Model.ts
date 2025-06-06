@@ -20,6 +20,8 @@ const productSchema = new mongoose.Schema({
   imagesUrl: { type: [String], required: false },
   commission: { type: String, required: false },
   searchTokens: { type: [String], required: false },
+},{
+  timestamps: true
 });
 
 const Product = mongoose.model("Product", productSchema);

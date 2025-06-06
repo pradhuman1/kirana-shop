@@ -14,6 +14,7 @@ import zoneRoutes from "./routes/zoneRoutes";
 import DatabaseRoutes from "./routes/DatabaseRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import shopOrderRoutes from "./routes/shopOrderRoutes";
+import cronRoutes from "./cron/cronRoutes"
 import jwtRoutes from "./routes/jwtRoutes";
 
 dotenv.config();
@@ -39,6 +40,8 @@ app.use("/api/auth/register", authRoutes);
 app.use("/api/auth/otp", authRoutes);
 app.use("/api/auth/verify-otp-and-create-business", authRoutes);
 app.use("/api/public/auth", authRoutes);
+// app.use("/cron", cronRoutes);
+
 // app.use("/", jwtRoutes);
 
 app.get("/heartbeat", (req: Request, res: Response)=>{

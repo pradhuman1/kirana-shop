@@ -9,7 +9,7 @@ import {
 import { AuthRequest } from "../interface/authRequest.interface";
 import { BusinessType } from "../enums/BusinessType";
 import { SearchProductResult } from "../interface/product.interface";
-
+import { tokenize } from "../cron/generateSearchTokens";
 
 export const bulkUploadProducts = async(
   req: Request,
@@ -49,7 +49,8 @@ export const bulkUploadProducts = async(
             packDesc: row.packDesc,
             brand: row.brand,
             unit: row.unit,
-            variantIds: []
+            variantIds: [],
+            searchTokens: tokenize(row.productTitle, row.brand, row.weight, row.ean)
           })
           const saved = await doc.save();
           // console.log(`entry saved with ${saved._id}`);
@@ -128,7 +129,7 @@ const updateVariantIDs = async(
 };
 
 
-function tokenize(input: string): string[] {
+function tokenizeSearchTerm(input: string): string[] {
   return input
     .toLowerCase()
     .split(/\s+/)
@@ -183,7 +184,7 @@ export const searchProducts = async (
     if (!zoneId) throw new Error("No zone Provided")
     if (!userType) throw new Error("No user Type Provided")
 
-    const tokens = tokenize(searchTerm);
+    const tokens = tokenizeSearchTerm(searchTerm);
     const fetchLimit = 1000;
     const skip = (page - 1) * pageSize;
 

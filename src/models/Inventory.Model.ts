@@ -24,6 +24,8 @@ const inventorySchema = new mongoose.Schema({
     type: String, // to be changed to mongoose.Schema.Types.ObjectId
     required: true
   }
+},{
+  timestamps: true
 });
 
 const Inventory = mongoose.model("Inventory", inventorySchema);

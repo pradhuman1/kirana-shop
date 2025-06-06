@@ -25,6 +25,8 @@ const businessSchema = new mongoose.Schema({
   },
   zoneId: { type: mongoose.Schema.Types.ObjectId, required: false },
   fcmToken: { type: String, required: false }
+},{
+  timestamps: true
 });
 
 // Compare entered password with hashed password
