@@ -8,7 +8,7 @@ import { BusinessType } from "../enums/BusinessType";
 import otpService from "../services/otpService";
 
 // Configuration for testing
-const USE_DUMMY_OTP = true;
+const USE_DUMMY_OTP = false;
 const DUMMY_OTP = "123456";
 
 export const testController = (req: Request, res: Response) => {
