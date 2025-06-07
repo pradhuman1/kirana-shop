@@ -413,7 +413,7 @@ export const updateBusiness = async (
     // }
 
     const zoneId =
-      latitude && longitude ? computeZone(latitude, longitude) : null;
+      latitude && longitude ? computeZone(latitude, longitude) : "682b8575539fd91045462040";
 
     const updatedBusinessData = {
       ...businessData,
